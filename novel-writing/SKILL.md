@@ -34,22 +34,29 @@ category: novel
 > 技能文件中的 `review_scan.py`、`consistency_check.py` 等工具均从 `书配置.md` 读取规则。
 > 技能文件本身不包含任何单本书的设定——设定由每本书自行维护。
 
-## 技能体系（12个）
+## 技能体系
 
 | 技能 | 用途 | 位置 |
 |------|------|------|
-| `novel-new-book` | 初始化新书，引导式收集世界观/人物/大纲 | `../novel-new-book.md` |
-| `novel-main` | 主技能，7步循环统筹 | `../novel-main.md` |
-| `novel-prep` | 资料整理，上下文压缩 | `../novel-prep.md` |
-| `novel-plot` | 剧情推演 | `../novel-plot.md` |
-| `novel-character` | 人物深度塑造（弧光/Want-Need/缺陷/对话潜台词） | `../novel-character.md` |
-| `novel-draft` | 正文生成（去AI味、番茄风格） | `../novel-draft.md` |
-| `novel-review` | 6维审查（OOC/人物一致性/矛盾/违禁/伏笔/质量） | `../novel-review.md` |
-| `novel-polish` | 内容打磨 | `../novel-polish.md` |
-| `novel-track` | 状态追踪（人物/伏笔/梗概） | `../novel-track.md` |
-| `novel-platform` | 番茄平台运营（推荐池/数据指标/更新节奏/广告策略） | `../novel-platform.md` |
-| `novel-backup` | 版本备份 | `../novel-backup.md` |
-| `novel-cron` | 每日巡检（备份/违禁词/伏笔/热榜/AI味） | `../novel-cron.md` |
+| `novel-new-book` | 初始化新书，引导式收集世界观/人物/大纲 | `../novel-new-book/SKILL.md` |
+| `novel-main` | 主技能，8步状态机统筹 | `../novel-main/SKILL.md` |
+| `novel-prep` | 资料整理，上下文压缩 | `../novel-prep/SKILL.md` |
+| `novel-plot` | 剧情推演 | `../novel-plot/SKILL.md` |
+| `novel-character` | 人物深度塑造（弧光/Want-Need/缺陷/对话潜台词） | `../novel-character/SKILL.md` |
+| `novel-draft` | 正文生成（去AI味、番茄风格） | `../novel-draft/SKILL.md` |
+| `novel-review` | 6维审查（OOC/人物一致性/矛盾/违禁/伏笔/质量） | `../novel-review/SKILL.md` |
+| `novel-polish` | 内容打磨 | `../novel-polish/SKILL.md` |
+| `novel-track` | 状态追踪（人物/伏笔/梗概） | `../novel-track/SKILL.md` |
+| `novel-platform` | 番茄平台运营（推荐池/数据指标/更新节奏/广告策略） | `../novel-platform/SKILL.md` |
+| `novel-backup` | 版本备份 | `../novel-backup/SKILL.md` |
+| `novel-cron` | 每日巡检（备份/违禁词/伏笔/热榜/AI味） | `../novel-cron/SKILL.md` |
+| `novel-skeleton` | 章节骨架生成与派发 | `../novel-skeleton/SKILL.md` |
+| `novel-editing-patterns` | 网文章节修复与质量提升模式 | `../novel-editing-patterns/SKILL.md` |
+| `novel-lessons-20260725` | 写作经验与系统优化教训 | `../novel-lessons-20260725/SKILL.md` |
+| `novel-publishing` | 网文平台半自动发布 | `../novel-publishing/SKILL.md` |
+| `fanqie-publisher` | 番茄发布专用脚本 | `../fanqie-publisher/SKILL.md` |
+
+> ⚠️ **结构约定（2026-08-01 重构后）**：所有技能统一为 `novel-xxx/SKILL.md` 子目录结构。**不要创建扁平 `.md`**——`skills_list` 只识别子目录技能，扁平技能在技能发现层面不可见（虽然 `skill_view` 按 name 仍可加载）。
 
 ## 知识库
 
