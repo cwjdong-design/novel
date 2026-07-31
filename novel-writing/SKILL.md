@@ -281,7 +281,7 @@ python3 ~/.hermes/skills/novel/scripts/consistency_check.py --book <书名>
 `novel-new-book` 阶段 3.5 强制执行 4 项骨架检查：主角人物卡、核心配角人物卡（≥3张）、主线大纲、第一卷细纲。任何一项未通过则不允许进入「写第 1 章」。确保项目有一个雏形骨架作为创作基准，后续边写边细化。
 
 ### 脚本与技能分离
-`novel-cron` 的所有 Python 脚本已从 Markdown 内嵌代码中提取到 `~/.hermes/skills/novel/scripts/` 独立 .py 文件。修复 bug 应改 .py 文件，不改 novel-cron.md。该文件中的内嵌代码仅供文档参考。
+`novel-cron` 的所有 Python 脚本已从 Markdown 内嵌代码中提取到 `~/.hermes/skills/novel/scripts/` 独立 .py 文件。修复 bug 应改 .py 文件，不改 novel-cron/SKILL.md。该文件中的内嵌代码仅供文档参考。
 
 ### 审查流程
 三步审查链：自动扫描(zero-tolerance) → 爽点注入(5项全过) → 读者审查(每3章，想弃则重写)。

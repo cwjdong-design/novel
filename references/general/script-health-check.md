@@ -17,12 +17,12 @@
 
 ```bash
 # 1. novel-main 引用的所有脚本是否真实存在
-grep -oP 'python3\s+\K[^\s]+' ~/.hermes/skills/novel/novel-main.md | while read p; do
+grep -oP 'python3\s+\K[^\s]+' ~/.hermes/skills/novel/novel-main/SKILL.md | while read p; do
   [ -f "$(eval echo $p)" ] && echo "✅ $p" || echo "❌ 缺失: $p"
 done
 
 # 2. novel-cron 引用的所有脚本是否真实存在
-grep -oP 'python3\s+\K[^\s]+' ~/.hermes/skills/novel/novel-cron.md | while read p; do
+grep -oP 'python3\s+\K[^\s]+' ~/.hermes/skills/novel/novel-cron/SKILL.md | while read p; do
   [ -f "$(eval echo $p)" ] && echo "✅ $p" || echo "❌ 缺失: $p"
 done
 
