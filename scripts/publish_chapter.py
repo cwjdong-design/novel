@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""番茄小说通用发布脚本 — 自动解析 MD 章节并发布到番茄后台
+"""番茄小说草稿箱投递脚本 — 自动解析 MD 章节并存入后台草稿箱
 
 用法：
-    python3 publish_chapter.py <章节号> --book <书名> [--mode draft|publish] [--book-id <ID>]
+    python3 publish_chapter.py <章节号> --book <书名> [--book-id <ID>]
 
 BOOK_ID 解析顺序：--book-id 参数 > 书配置.md 中的番茄BOOK_ID > 报错
 KNOW_IDS 从 番茄章节ID.json 读取（不存在则空字典）
@@ -98,10 +98,8 @@ def fill_body(page, body_html):
     time.sleep(3)
 
 
-def publish(chapter_num, md_path, mode='draft', book_id=None, know_ids=None):
-    """
-    mode: 'draft' = 新建存草稿, 'publish' = 编辑已发布
-    """
+def publish(chapter_num, md_path, book_id=None, know_ids=None):
+    """新建章节并存入草稿箱；本脚本不具备正式发布能力。"""
     if know_ids is None:
         know_ids = {}
     ch_num, title, body_html = parse_md(md_path)
@@ -112,20 +110,16 @@ def publish(chapter_num, md_path, mode='draft', book_id=None, know_ids=None):
         try:
             page = ctx.new_page()
 
-            if mode == 'publish' and ch_num in know_ids:
-                url = f'https://fanqienovel.com/main/writer/{book_id}/publish/{know_ids[ch_num]}/?enter_from=modifychapter'
-            else:
-                url = f'https://fanqienovel.com/main/writer/{book_id}/publish/?enter_from=newchapter'
+            url = f'https://fanqienovel.com/main/writer/{book_id}/publish/?enter_from=newchapter'
 
             page.goto(url, wait_until='domcontentloaded')
             time.sleep(3)
             dismiss_dialogs(page)
 
-            # 填序号（仅新建）
-            if mode == 'draft':
-                num_input = page.locator('.serial-editor-title-left input[type="text"]')
-                if num_input.count() > 0:
-                    set_input_value(num_input, str(ch_num))
+            # 填序号
+            num_input = page.locator('.serial-editor-title-left input[type="text"]')
+            if num_input.count() > 0:
+                set_input_value(num_input, str(ch_num))
 
             # 填标题
             ti = page.locator('input[placeholder*="标题"]')
@@ -135,41 +129,14 @@ def publish(chapter_num, md_path, mode='draft', book_id=None, know_ids=None):
             # 填正文
             fill_body(page, body_html)
 
-            # 操作
-            if mode == 'draft':
-                draft_btn = page.locator('button:has-text("存草稿")')
-                if draft_btn.count() > 0:
-                    draft_btn.click(force=True)
-                    time.sleep(3)
-                    print(f'✅ 第{ch_num}章已存草稿')
-                else:
-                    print(f'⚠️ 未找到存草稿按钮，可能已是已发布章节')
-            else:  # publish
-                page.locator('button:has-text("下一步")').click(force=True, timeout=5000)
-                time.sleep(2)
-                for b in page.query_selector_all('label:has-text("是")'):
-                    try:
-                        b.click(force=True, timeout=3000)
-                        break
-                    except Exception:
-                        pass
-                time.sleep(0.5)
-                for b in page.query_selector_all('button:has-text("确认发布")'):
-                    try:
-                        b.click(force=True, timeout=5000)
-                        break
-                    except Exception:
-                        pass
-                time.sleep(2)
-                for btn_text in ('提交', '继续发布', '确认'):
-                    for b in page.query_selector_all(f'button:has-text("{btn_text}")'):
-                        if b.is_visible():
-                            b.click(force=True, timeout=3000)
-                            print(f'  ⚠️ 错别字提示已跳过')
-                            time.sleep(3)
-                            break
-                time.sleep(2)
-                print(f'✅ 第{ch_num}章已发布')
+            # 只存草稿，绝不进入正式发布流程
+            draft_btn = page.locator('button:has-text("存草稿")')
+            if draft_btn.count() > 0:
+                draft_btn.click(force=True)
+                time.sleep(3)
+                print(f'✅ 第{ch_num}章已存草稿')
+            else:
+                print(f'⚠️ 未找到存草稿按钮')
 
             print('🌐 浏览器保持打开，确认后手动关闭')
             time.sleep(10)
@@ -178,10 +145,10 @@ def publish(chapter_num, md_path, mode='draft', book_id=None, know_ids=None):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='番茄小说发布')
+    parser = argparse.ArgumentParser(description='番茄小说草稿箱投递')
     parser.add_argument('chapter', type=int, help='章节号')
     parser.add_argument('--book', default='', help='书名（必填）')
-    parser.add_argument('--mode', default='draft', choices=['draft', 'publish'], help='发布模式')
+
     parser.add_argument('--book-id', default=None, help='番茄 BOOK_ID（覆盖书配置.md）')
     args = parser.parse_args()
 
@@ -198,4 +165,4 @@ if __name__ == '__main__':
     know_ids = load_know_ids(args.book)
 
     print(f'📖 BOOK_ID={book_id}, 已知章节={len(know_ids)}个')
-    publish(args.chapter, md_path, args.mode, book_id, know_ids)
+    publish(args.chapter, md_path, book_id, know_ids)

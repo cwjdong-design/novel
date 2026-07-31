@@ -4,25 +4,29 @@ description: 番茄小说半自动发布 — Playwright 操作后台新建章节
 category: novel
 ---
 
-# 番茄小说半自动发布
+# 番茄小说草稿箱投递
 
 ## 触发条件
-用户说"发布第X章""存草稿""新建章节"等。
+用户说「发布第X章」「存草稿」「新建章节」等时，统一解释为：将本地章节送入番茄后台草稿箱并核对。
+
+## 能力边界（硬性）
+
+- **只能存草稿并核对草稿箱状态。**
+- **绝不点击正式发布、确认发布、定时发布等按钮。**
+- **草稿保存成功后直接汇报，不再询问用户是否正式发布。**
+- 用户明确说「正式发布」时，也只能说明当前能力止于草稿箱，不能执行或提供自动发布模式。
 
 ## 用法
 
 ```bash
-# 存草稿（默认）
+# 存入草稿箱
 python3 ~/.hermes/skills/novel/scripts/publish_chapter.py <章节号> --book <书名>
-
-# 发布已存草稿的章节
-python3 ~/.hermes/skills/novel/scripts/publish_chapter.py <章节号> --book <书名> --mode publish
 
 # 指定 BOOK_ID（覆盖书配置）
 python3 ~/.hermes/skills/novel/scripts/publish_chapter.py <章节号> --book <书名> --book-id <BOOK_ID>
 ```
 
-脚本自动：读本地MD → 填序号+标题+正文 → 点"存草稿"或"发布" → 10秒后退出。
+脚本自动：读本地 MD → 填序号、标题、正文 → 点击「存草稿」→ 退出；随后需进入草稿箱核对章节号、标题和字数。
 
 ## 配置
 

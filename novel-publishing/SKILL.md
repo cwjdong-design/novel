@@ -17,15 +17,16 @@ category: novel
 - 「发布这章到番茄」「把XX章发到后台」「准备草稿」「检查发布状态」
 - 任何涉及到作者后台操作章节的请求
 
-## 安全铁律
+## 能力边界与安全铁律
 
-1. **永远先存草稿，再考虑发布**。没有例外。
-2. **发布动作前必须复述作品名和章节标题**，等用户明确确认（如「确认发布」）。
-3. **遇到验证码/风控/页面结构变化 → 立即停止**，不要盲点按钮。
-4. **每步操作后先验证状态**，确认成功再继续。
-5. **每关键节点截图留痕**（编辑器加载、草稿保存、发布成功）。
-6. **不要要求用户提供密码**。用扫码登录。
-7. **不要重复点击发布按钮**。发布结果不明确时先检查章节列表。
+1. **本能力只负责把本地章节送入后台草稿箱并核对，终点是 `draft_saved_verified`。**
+2. **绝不执行正式发布、确认发布、定时发布或任何使章节对读者可见的动作。**
+3. **草稿保存成功后直接汇报，不再询问用户是否正式发布。**
+4. 用户口语说「发布第 X 章」时，按既定约定解释为「送入草稿箱」；只有用户特别强调正式发布时，明确说明当前能力止于草稿，仍不执行。
+5. **遇到验证码/风控/页面结构变化 → 立即停止**，不要盲点按钮。
+6. **每步操作后先验证状态**，确认成功再继续。
+7. **关键节点截图留痕**（编辑器加载、草稿保存、草稿箱核对）。
+8. **不要要求用户提供密码**。用扫码登录。
 
 ## 通用工作流
 
@@ -76,20 +77,17 @@ ctx = p.chromium.launch_persistent_context(
 
 输出：`ready to publish` / `not ready` + 阻塞原因
 
-### 5. publish（发布）
+### 5. reconcile（核对草稿状态）
 
-仅在用户明确确认后执行。
+保存草稿后进入草稿箱，核对：
+- 作品名正确
+- 章节号、标题正确
+- 正文非空，后台字数合理
+- 草稿数量与本次投递数量一致
 
-步骤：
-1. 复述作品名和章节标题
-2. 等待用户回复「确认发布」
-3. 点击发布
-4. 如有确认弹窗，核对后确认
-5. 等待成功提示
-6. 截图存档
-7. 回到章节列表确认状态
+核对成功即结束任务。不要进入发布流程，不要询问是否继续正式发布。
 
-### 6. reconcile（核对状态）
+### 6. reconcile（本地与草稿箱对账）
 
 对比平台章节列表和本地 MD 文件：
 - 哪些章已发布
@@ -101,8 +99,7 @@ ctx = p.chromium.launch_persistent_context(
 
 ```
 pending → backend_opened → book_selected → editor_opened
-       → draft_loaded → draft_saved → awaiting_confirmation
-       → published_verified
+       → draft_loaded → draft_saved → draft_saved_verified → completed
 ```
 
 失败路径：任何步骤异常 → `failed_needs_review`，报告最后成功步骤和阻塞原因。
@@ -116,7 +113,7 @@ pending → backend_opened → book_selected → editor_opened
   "book_name": "作品名",
   "chapter_title": "第N章 标题",
   "chapter_body": "正文内容（从MD读取）",
-  "action": "prepare_draft|review|publish|reconcile",
+  "action": "prepare_draft|review|reconcile",
   "source_file": "/absolute/path/to/chapter.md",
   "notes": "可选备注，如：发布前检查结尾伏笔"
 }
@@ -142,9 +139,9 @@ pending → backend_opened → book_selected → editor_opened
 **当前方案**：Playwright + 固定浏览器 profile（`~/.hermes/browser-profiles/fanqie`），不用 Hermes browser 工具。
 
 核心差异：
-- **新建章节**：有序号+标题两个字段，有"存草稿"按钮
-- **编辑已发布章节**：只有标题字段，下一步 → AI选"否" → 确认发布
-- **编辑待发布定时章节**：下一步可能不弹确认窗，自动保存
+- **新建章节/草稿**：有序号+标题两个字段，有「存草稿」按钮
+- **编辑草稿**：使用草稿编辑链接，修改后仍只保存草稿
+- **已发布章节**：只做状态识别，不进入编辑或重新发布流程
 - **正文必用 innerHTML**：ProseMirror 拒绝所有键盘粘贴/输入
 
 ### 七猫小说
@@ -168,12 +165,12 @@ pending → backend_opened → book_selected → editor_opened
 - **ProseMirror 不接收内容** → 必须用 `innerHTML` 直接写 DOM，paste/keyboard 全部无效
 - **弹窗挡操作** → 先 Escape 两次，再 force=True 点击按钮
 - **".first()" 报错** → Playwright 1.60 不用 `.first()`，直接用 selector
-- **"确认发布"找不到** → 待发布定时章节无确认弹窗，修改后自动保存即完成
+- **草稿保存结果不明确** → 返回草稿箱核对章节号、标题、字数；不要点击其他发布相关按钮
 - 验证码/风控 → 停止，让用户手动处理
 
 ## 注意事项
 
-- 此技能处理的是**已写好的章节发布**，不涉及写作流程
+- 此技能处理的是**已写好章节的草稿箱投递与核对**，不具备正式发布能力
 - 写作流程见 `novel-writing`、`novel-main` 等技能
 - 平台运营策略见 `novel-platform`
 - 不要试图提取/导出/搬运 Cookie，用固定浏览器 profile 保持登录态
