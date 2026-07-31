@@ -13,13 +13,13 @@ category: novel
 
 ```bash
 # 存草稿（默认）
-python3 ~/novels/_shared/scripts/publish_chapter.py <章节号> --book <书名>
+python3 ~/.hermes/skills/novel/scripts/publish_chapter.py <章节号> --book <书名>
 
 # 发布已存草稿的章节
-python3 ~/novels/_shared/scripts/publish_chapter.py <章节号> --book <书名> --mode publish
+python3 ~/.hermes/skills/novel/scripts/publish_chapter.py <章节号> --book <书名> --mode publish
 
 # 指定 BOOK_ID（覆盖书配置）
-python3 ~/novels/_shared/scripts/publish_chapter.py <章节号> --book <书名> --book-id <BOOK_ID>
+python3 ~/.hermes/skills/novel/scripts/publish_chapter.py <章节号> --book <书名> --book-id <BOOK_ID>
 ```
 
 脚本自动：读本地MD → 填序号+标题+正文 → 点"存草稿"或"发布" → 10秒后退出。

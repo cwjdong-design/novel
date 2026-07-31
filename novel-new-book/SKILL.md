@@ -119,7 +119,7 @@ mkdir -p ~/novels/books/<书名>/{00-大纲细纲/分卷细纲,01-正文存稿,0
 mkdir -p ~/.hermes/skills/novel/_state
 ```
 
-**首次运行检查**：如果 `~/novels/_shared/logs/`、`~/novels/_shared/backups/` 和 `~/novels/_shared/scripts/` 不存在，自动创建：
+**首次运行检查**：如果 `~/novels/_shared/logs/`、`~/novels/_shared/backups/` 和 `~/.hermes/skills/novel/scripts/` 不存在，自动创建：
 ```bash
 mkdir -p ~/novels/_shared/{logs,backups,scripts}
 ```

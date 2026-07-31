@@ -10,7 +10,7 @@
 
 ## 解决方案
 
-程序化状态锁：`~/novels/_shared/scripts/novel_step.sh`
+程序化状态锁：`~/.hermes/skills/novel/scripts/novel_step.sh`
 
 ```bash
 # 进入每一步前
@@ -64,7 +64,7 @@ MILESTONE 5的倍数章自动豁免，BACKUP 自动补标记。
 >
 > 如果 `review_scan.py` 不存在，脚本会打印警告但**不阻断**（降级运行）。只有结算公式错误或 `review_scan.py` 返回非零退出码才会阻断 `done DRAFT`。
 
-脚本路径：`~/novels/_shared/scripts/novel_step.sh`（实际文件在 `~/novels/`，技能目录下的 `scripts/novel_step.sh` 是软链/副本）。
+脚本路径：`~/.hermes/skills/novel/scripts/novel_step.sh`（实际文件在 `~/novels/`，技能目录下的 `scripts/novel_step.sh` 是软链/副本）。
 
 ## 相关文件
 

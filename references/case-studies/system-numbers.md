@@ -24,7 +24,7 @@
 
 ## 数字纪律
 
-- 骨架写完后必须跑 `~/novels/_shared/scripts/novel_step.sh validate <书名> <章节>`
+- 骨架写完后必须跑 `~/.hermes/skills/novel/scripts/novel_step.sh validate <书名> <章节>`
 - `novel_step.sh done DRAFT` 会自动触发此验证
 - 结算四舍五入取整。0.56×287341×0.10 = 16091.096 → ¥16,091
 

@@ -36,7 +36,7 @@ done
 | 脚本 | 路径 | 调用方 | 存在 |
 |------|------|--------|:--:|
 | review_scan.py | `~/.hermes/skills/novel/scripts/` | novel-main | ✅ |
-| consistency_check.py | `~/novels/_shared/scripts/` | novel-main | ✅ |
-| novel_scan.py | `~/novels/_shared/scripts/` | novel-cron | ✅ |
-| foreshadow_check.py | `~/novels/_shared/scripts/` | novel-cron | ✅ |
-| backup_chapter.py | `~/novels/_shared/scripts/` | novel-main | ✅ |
+| consistency_check.py | `~/.hermes/skills/novel/scripts/` | novel-main | ✅ |
+| novel_scan.py | `~/.hermes/skills/novel/scripts/` | novel-cron | ✅ |
+| foreshadow_check.py | `~/.hermes/skills/novel/scripts/` | novel-cron | ✅ |
+| backup_chapter.py | `~/.hermes/skills/novel/scripts/` | novel-main | ✅ |

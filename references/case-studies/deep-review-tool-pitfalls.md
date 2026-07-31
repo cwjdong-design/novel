@@ -17,10 +17,10 @@
 必须传绝对路径，不能用相对路径：
 ```bash
 # 正确
-python3 ~/novels/_shared/scripts/consistency_check.py --book "$(pwd)"
+python3 ~/.hermes/skills/novel/scripts/consistency_check.py --book "$(pwd)"
 
 # 错误
-python3 ~/novels/_shared/scripts/consistency_check.py --book .
+python3 ~/.hermes/skills/novel/scripts/consistency_check.py --book .
 ```
 
 ## novel_scan.py 参数
@@ -28,10 +28,10 @@ python3 ~/novels/_shared/scripts/consistency_check.py --book .
 `--chapters N` 是整数（最近 N 章），不是逗号分隔列表：
 ```bash
 # 正确: 扫描最近3章
-python3 ~/novels/_shared/scripts/novel_scan.py --book "书名" --chapters 3
+python3 ~/.hermes/skills/novel/scripts/novel_scan.py --book "书名" --chapters 3
 
 # 错误
-python3 ~/novels/_shared/scripts/novel_scan.py --book "书名" --chapters "22,23,24"
+python3 ~/.hermes/skills/novel/scripts/novel_scan.py --book "书名" --chapters "22,23,24"
 ```
 
 ## 跨文档同步滞后检测

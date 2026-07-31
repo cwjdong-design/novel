@@ -236,7 +236,7 @@ $SKEL
 
 **第 0 步：跨文档一致性检查（每 5 章执行一次，约 2 秒）**
 ```bash
-python3 ~/novels/_shared/scripts/consistency_check.py --book "<书名>"
+python3 ~/.hermes/skills/novel/scripts/consistency_check.py --book "<书名>"
 ```
 - 仅在章节号是 5 的倍数（5/10/15...）时执行，避免每章重复校验
 - 7 维交叉验证：人物卡↔总表 / 章节规划↔正文 / 故事线状态 / 前文时间线 / 伏笔表 / 正文人物注册 / 大纲分卷
@@ -334,7 +334,7 @@ claude -p "$(cat /tmp/reader_review_N章.txt)" --model opus --max-turns 30 --dan
 
 **🔒 修改前备份（强制，不可跳过）**：在执行 POLISH 修改之前，必须先备份当前章节到版本历史：
 ```bash
-python3 ~/novels/_shared/scripts/backup_chapter.py ~/novels/books/<书名>/01-正文存稿/第X章.md
+python3 ~/.hermes/skills/novel/scripts/backup_chapter.py ~/novels/books/<书名>/01-正文存稿/第X章.md
 ```
 备份后文件存入 `03-版本备份/正文历史/第X章_YYYYMMDD_HHMMSS.md`。
 > ⚠️ 没有备份就没有修改历史，改错了找不回来。此步骤不可跳过。

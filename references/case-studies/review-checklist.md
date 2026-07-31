@@ -52,9 +52,9 @@
 | 工具 | 路径 | 用途 | 触发时机 |
 |------|------|------|---------|
 | review_scan.py | `~/.hermes/skills/novel/scripts/` | 系统术语+地名+AI禁用词+对话框式 | 每章DRAFT后 |
-| consistency_check.py | `~/novels/_shared/scripts/` | 7维跨文档交叉校验 | 每5章REVIEW时 |
-| novel_scan.py | `~/novels/_shared/scripts/` | 违禁词库全面扫描 | cron / 手动 |
-| foreshadow_check.py | `~/novels/_shared/scripts/` | 伏笔超期检测 | cron |
+| consistency_check.py | `~/.hermes/skills/novel/scripts/` | 7维跨文档交叉校验 | 每5章REVIEW时 |
+| novel_scan.py | `~/.hermes/skills/novel/scripts/` | 违禁词库全面扫描 | cron / 手动 |
+| foreshadow_check.py | `~/.hermes/skills/novel/scripts/` | 伏笔超期检测 | cron |
 
 ### consistency_check.py 七维校验
 - C1: 人物卡 ↔ 人物总表双向一致性（名称归一化）

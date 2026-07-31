@@ -81,9 +81,9 @@ category: novel
   | 工具 | 默认路径 | 扫描项 |
   |------|---------|--------|
   | review_scan.py | `scripts/` | 系统术语/地名白名单/真实地名黑名单/AI禁用词/章末标记/标题格式/对话框式/双引号检测 |
-  | novel_scan.py | `~/novels/_shared/scripts/` | 违禁词库全面扫描 |
-  | foreshadow_check.py | `~/novels/_shared/scripts/` | 伏笔超期检测 |
-  | consistency_check.py | `~/novels/_shared/scripts/` | 跨文档7维校验 |
+  | novel_scan.py | `~/.hermes/skills/novel/scripts/` | 违禁词库全面扫描 |
+  | foreshadow_check.py | `~/.hermes/skills/novel/scripts/` | 伏笔超期检测 |
+  | consistency_check.py | `~/.hermes/skills/novel/scripts/` | 跨文档7维校验 |
 
 ## 审查体系
 
@@ -134,7 +134,7 @@ REVIEW↔POLISH 最多循环3次。MILESTONE 仅在 5/10/15...章触发，阻塞
 所有需要书特定规则的脚本使用 `--book <书名>` 参数从 `书配置.md` 加载规则：
 ```bash
 python3 scripts/review_scan.py <章节路径> --book <书名>
-python3 ~/novels/_shared/scripts/consistency_check.py --book <书名>
+python3 ~/.hermes/skills/novel/scripts/consistency_check.py --book <书名>
 ```
 > `--config <路径>` 可直接指定书配置.md 的完整路径。书配置缺失时回退到默认规则。
 > `novel_step.sh` 的 DRAFT 验证已改为委托 `review_scan.py --book`，不再内嵌硬编码列表。
@@ -237,7 +237,7 @@ python3 ~/novels/_shared/scripts/consistency_check.py --book <书名>
 
 当审查报告或读者反馈指出已有章节需重写时：
 
-1. **备份**：`python3 ~/novels/_shared/scripts/backup_chapter.py 第X章.md`
+1. **备份**：`python3 ~/.hermes/skills/novel/scripts/backup_chapter.py 第X章.md`
 2. **锁定改动范围**：确认哪些章需动，哪些章已发布（锁），哪些自由。评估关联影响
 3. **准备 prompt**：写到 `/tmp/novel_chX_rewrite.txt`，文件传参避免 shell 转义。prompt 首行必须是「直接输出第X章正文。不要先设计方案。不要问问题。直接写。」+ 注入 opus铁律完整查表
 4. **派发 Claude Code CLI**：独立章节可并行派发（background + notify_on_complete）
@@ -256,7 +256,7 @@ python3 ~/novels/_shared/scripts/consistency_check.py --book <书名>
 ### 修改必备份
 > **任何对 `01-正文存稿/第X章.md` 的修改操作，必须先执行：**
 > ```bash
-> python3 ~/novels/_shared/scripts/backup_chapter.py ~/novels/books/<书名>/01-正文存稿/第X章.md
+> python3 ~/.hermes/skills/novel/scripts/backup_chapter.py ~/novels/books/<书名>/01-正文存稿/第X章.md
 > ```
 > 备份到 `03-版本备份/正文历史/第X章_YYYYMMDD_HHMMSS.md`。没有备份就没有修改历史。
 
@@ -274,7 +274,7 @@ python3 ~/novels/_shared/scripts/consistency_check.py --book <书名>
 `novel-new-book` 阶段 3.5 强制执行 4 项骨架检查：主角人物卡、核心配角人物卡（≥3张）、主线大纲、第一卷细纲。任何一项未通过则不允许进入「写第 1 章」。确保项目有一个雏形骨架作为创作基准，后续边写边细化。
 
 ### 脚本与技能分离
-`novel-cron` 的所有 Python 脚本已从 Markdown 内嵌代码中提取到 `~/novels/_shared/scripts/` 独立 .py 文件。修复 bug 应改 .py 文件，不改 novel-cron.md。该文件中的内嵌代码仅供文档参考。
+`novel-cron` 的所有 Python 脚本已从 Markdown 内嵌代码中提取到 `~/.hermes/skills/novel/scripts/` 独立 .py 文件。修复 bug 应改 .py 文件，不改 novel-cron.md。该文件中的内嵌代码仅供文档参考。
 
 ### 审查流程
 三步审查链：自动扫描(zero-tolerance) → 爽点注入(5项全过) → 读者审查(每3章，想弃则重写)。

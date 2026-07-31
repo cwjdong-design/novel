@@ -18,7 +18,7 @@
 ### 3. 嵌入式脚本 = 无尽 bug
 - novel-cron.md 中嵌了 5 个 Python 脚本
 - 每次修 bug 产生新 bug，循环十几轮
-- 根因修复：提取到 ~/novels/_shared/scripts/ 独立 .py 文件
+- 根因修复：提取到 ~/.hermes/skills/novel/scripts/ 独立 .py 文件
 - novel-cron.md 顶部标注引用路径，以 .py 文件为准
 
 ### 4. 多轮迭代审查 = 打地鼠

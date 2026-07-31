@@ -78,9 +78,9 @@ git tag arch-before-restructure   # 随时可回滚
 
 ```bash
 # 实体移到技能目录
-mv ~/novels/_shared/scripts/xxx.py ~/.hermes/skills/novel/scripts/
+mv ~/.hermes/skills/novel/scripts/xxx.py ~/.hermes/skills/novel/scripts/
 # 旧位置留软链接（现有引用不破坏）
-ln -s ~/.hermes/skills/novel/scripts/xxx.py ~/novels/_shared/scripts/xxx.py
+ln -s ~/.hermes/skills/novel/scripts/xxx.py ~/.hermes/skills/novel/scripts/xxx.py
 ```
 
 > 好处：开源时脚本在技能包内（别人能跑）；本机旧路径引用依然有效（软链接指向新位置）。新代码优先写新路径，README 保留兼容说明。
@@ -93,7 +93,7 @@ python3 scripts/review_scan.py <真实章节> --book <真实书名>      # confi
 python3 scripts/consistency_check.py --book <真实书名>            # 7维全通过
 bash scripts/novel_step.sh check <步骤>                           # 流程锁正常
 # 软链接兼容
-bash ~/novels/_shared/scripts/novel_step.sh check <步骤>          # 旧路径仍可用
+bash ~/.hermes/skills/novel/scripts/novel_step.sh check <步骤>          # 旧路径仍可用
 # skill_view 抽查迁移后的技能
 ```
 

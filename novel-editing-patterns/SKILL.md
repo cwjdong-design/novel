@@ -141,7 +141,7 @@ print(f'番茄字数≈{len(text)}')
 连续创作时，助理会跳过 novel-main 7 步流程中的步骤（跳 PLOT、缩 REVIEW、跳 TRACK）。纸面约束挡不住势头压力。
 
 ### 解决
-`~/novels/_shared/scripts/novel_step.sh` — 状态锁。每步执行前 check，完成后 done。
+`~/.hermes/skills/novel/scripts/novel_step.sh` — 状态锁。每步执行前 check，完成后 done。
 
 ```bash
 novel_step.sh check DRAFT   # ⚠️ BLOCKED 如果缺 PLOT
@@ -304,13 +304,13 @@ novel_step.sh done DRAFT    # 标记完成
 任何对 `01-正文存稿/` 的修改必须先行备份：
 
 ```bash
-python3 ~/novels/_shared/scripts/backup_chapter.py <path>
+python3 ~/.hermes/skills/novel/scripts/backup_chapter.py <path>
 ```
 
 多章可批量：
 ```bash
 for f in 第17章 第18章; do
-  python3 ~/novels/_shared/scripts/backup_chapter.py \
+  python3 ~/.hermes/skills/novel/scripts/backup_chapter.py \
     ~/novels/books/<书名>/01-正文存稿/$f.md
 done
 ```
@@ -357,7 +357,7 @@ canto_chars = ['嘅','唔','佢','咗','喺','哋','冇','咩','睇','啲','嘢'
 
 ```bash
 # 1. 备份所有要改的章
-python3 ~/novels/_shared/scripts/backup_chapter.py 第20章.md
+python3 ~/.hermes/skills/novel/scripts/backup_chapter.py 第20章.md
 # ...（可并行多个）
 
 # 2. 逐章patch：先读完整上下文，再决定保留哪些

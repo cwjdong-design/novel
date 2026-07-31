@@ -7,7 +7,7 @@
 ## 安装
 
 ```bash
-chmod +x ~/novels/_shared/scripts/novel_step.sh
+chmod +x ~/.hermes/skills/novel/scripts/novel_step.sh
 ```
 
 ## 使用
@@ -50,6 +50,6 @@ novel_step.sh validate <书名> [章节]
 ## 文件位置
 
 ```
-~/novels/_shared/scripts/novel_step.sh   # 主脚本
+~/.hermes/skills/novel/scripts/novel_step.sh   # 主脚本
 ~/.hermes/skills/novel/_state/          # 进度JSON
 ```
