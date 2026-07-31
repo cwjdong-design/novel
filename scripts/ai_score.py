@@ -95,7 +95,7 @@ def ai_score(text: str) -> dict:
     #    会匹配任意 12 个连续汉字，误判率接近 100%（如「今天天气真好我们出去走走」也会命中）。
     #    在没有成语词典的情况下，此维度默认跳过（计 0 分），不参与加权计算。
     #    如需启用，请将 chengyu_dict_path 指向一个成语列表文件（每行一个成语）。
-    chengyu_dict_path = None  # 设置为 Path("~/novels/_shared/data/成语词典.txt") 以启用
+    chengyu_dict_path = None  # 可选：设置成语词典路径以启用成语密度评分（默认不启用）
     chengyu_overdose = 0
     if chengyu_dict_path and Path(os.path.expanduser(str(chengyu_dict_path))).exists():
         chengyu_dict = set(

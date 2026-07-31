@@ -124,6 +124,7 @@ mkdir -p ~/.hermes/skills/novel/_state
 mkdir -p ~/novels/_shared/{logs,backups}
 ```
 这两个目录供 novel-cron 每日巡检写入日志和全局备份使用。所有脚本统一存放在 `~/.hermes/skills/novel/scripts/`（唯一权威位置），`~/novels/_shared/` 下**不再有 scripts 目录**（已去除软链接兼容层，2026-08-01 优化）。
+> ℹ️ **例外**：番茄发布专用脚本（update_chapter.py / qr_login.py / login_browser.py）随 `fanqie-publisher` 技能存放于 `fanqie-publisher/scripts/`——这是技能内聚设计，不是漏网文件。
 
 **最终目录结构**：
 ```
