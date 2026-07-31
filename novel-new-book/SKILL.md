@@ -123,7 +123,7 @@ mkdir -p ~/.hermes/skills/novel/_state
 ```bash
 mkdir -p ~/novels/_shared/{logs,backups}
 ```
-这两个目录供 novel-cron 每日巡检写入日志和全局备份使用。脚本统一存放在 `~/.hermes/skills/novel/scripts/`（实体），`~/novels/_shared/scripts/` 仅保留软链接兼容旧路径。
+这两个目录供 novel-cron 每日巡检写入日志和全局备份使用。所有脚本统一存放在 `~/.hermes/skills/novel/scripts/`（唯一权威位置），`~/novels/_shared/` 下**不再有 scripts 目录**（已去除软链接兼容层，2026-08-01 优化）。
 
 **最终目录结构**：
 ```

@@ -58,8 +58,17 @@
 - 重复文件 = 0（尤其 knowledge/ 与 references/ 同名）
 - 引用的每个文件真实存在（如 novel-cron 引用的组合脚本要真创建，不能只写路径）
 
-## 本机软链接现状（2026-08-01）
+## 脚本路径演进（2026-08-01）
 
-- 脚本实体：`~/.hermes/skills/novel/scripts/`（12 个，含 novel_daily.sh 组合巡检脚本）
-- 旧路径兼容：`~/novels/_shared/scripts/` 全部为软链接 → 技能目录实体
-- git 跟踪实体，不跟踪软链接
+**最终决策：不保留软链接兼容层。** 软链接有隐患（绝对路径硬编码、换机器即断、双路径语义混乱），且 git 分享时软链接根本不会被跟踪（git 只存实体）。前提是**先清零所有引用点再删**：
+
+1. 确认引用面：SOUL.md / cron / 其他技能零引用（`grep -rn '_shared/scripts'` 全局检查）
+2. 确认脚本内部互相引用已用新路径（`grep -rn 'scripts/' scripts/*.py scripts/*.sh`）
+3. 更新执行文档中的旧路径描述（novel-new-book/SKILL.md）
+4. 删除软链接 + `rmdir scripts`（保留 `_shared/logs` 和 `_shared/backups`）
+5. 全链路回测新路径（review_scan/consistency/novel_step/foreshadow/chapter_stats/novel_daily）
+
+**当前状态**：
+- 脚本唯一权威位置：`~/.hermes/skills/novel/scripts/`（12 个，含 novel_daily.sh 组合巡检脚本）
+- `~/novels/_shared/` 只有 `logs/` 和 `backups/`（日志/备份，无脚本）
+- 复盘文档（case-studies/PLAN）中保留历史描述，不代表实际路径
