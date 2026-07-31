@@ -31,11 +31,11 @@ jobs:
 | # | 巡检项 | 脚本 | 调用方式 |
 |---|--------|------|---------|
 | 1 | 全量备份 | backup 逻辑（见 novel-backup） | 打包 01-正文存稿/02-设定文档/00-大纲细纲 |
-| 2 | 违禁词扫描 | `novel_scan.py` | `python3 scripts/novel_scan.py [--book <书名>] [--chapters N]` |
-| 3 | 伏笔到期提醒 | `foreshadow_check.py` | `python3 scripts/foreshadow_check.py [--book <书名>] [--chapters N]` |
-| 4 | 章节统计 | `chapter_stats.py` | `python3 scripts/chapter_stats.py [--book <书名>]` |
-| 5 | 网络热榜 | `trending_news.py` | `python3 scripts/trending_news.py` |
-| 6 | AI味健康评分 | `ai_score.py` | `python3 scripts/ai_score.py [--book <书名>]` |
+| 2 | 违禁词扫描 | `novel_scan.py` | `python3 ~/.hermes/skills/novel/scripts/novel_scan.py [--book <书名>] [--chapters N]` |
+| 3 | 伏笔到期提醒 | `foreshadow_check.py` | `python3 ~/.hermes/skills/novel/scripts/foreshadow_check.py [--book <书名>] [--chapters N]` |
+| 4 | 章节统计 | `chapter_stats.py` | `python3 ~/.hermes/skills/novel/scripts/chapter_stats.py [--book <书名>]` |
+| 5 | 网络热榜 | `trending_news.py` | `python3 ~/.hermes/skills/novel/scripts/trending_news.py` |
+| 6 | AI味健康评分 | `ai_score.py` | `python3 ~/.hermes/skills/novel/scripts/ai_score.py [--book <书名>]` |
 
 > ⚠️ OOC 角色一致性检测**不在 cron 中运行**（需要人物库上下文，由 REVIEW 步骤人工执行）。
 
@@ -88,7 +88,7 @@ du -sh "$BACKUP_DIR"
 
 ## 二、违禁词扫描
 
-> 脚本：`scripts/novel_scan.py`
+> 脚本：`~/.hermes/skills/novel/scripts/novel_scan.py`
 > 用法：`python3 novel_scan.py --book <书名> [--chapters 5]`
 
 违禁词库存储在 `knowledge/违禁词库.json`，结构：
@@ -111,7 +111,7 @@ du -sh "$BACKUP_DIR"
 
 ## 三、伏笔到期提醒
 
-> 脚本：`scripts/foreshadow_check.py`
+> 脚本：`~/.hermes/skills/novel/scripts/foreshadow_check.py`
 > 用法：`python3 foreshadow_check.py [--book <书名>] [--chapters 30]`
 
 数据源：`02-设定文档/伏笔追踪表.md`
@@ -125,7 +125,7 @@ du -sh "$BACKUP_DIR"
 
 ## 四、章节统计
 
-> 脚本：`scripts/chapter_stats.py`
+> 脚本：`~/.hermes/skills/novel/scripts/chapter_stats.py`
 > 用法：`python3 chapter_stats.py [--book <书名>]`
 
 统计维度：总字数、均字、7天更新、断更天数、字数趋势、更新时段。
@@ -133,7 +133,7 @@ du -sh "$BACKUP_DIR"
 
 ## 五、网络热榜话题监控
 
-> 脚本：`scripts/trending_news.py`
+> 脚本：`~/.hermes/skills/novel/scripts/trending_news.py`
 > 用法：`python3 trending_news.py`
 
 数据源：RSS 源（知乎日报/36氪），`feedparser` 解析。
@@ -141,7 +141,7 @@ du -sh "$BACKUP_DIR"
 
 ## 六、AI味健康评分
 
-> 脚本：`scripts/ai_score.py`
+> 脚本：`~/.hermes/skills/novel/scripts/ai_score.py`
 > 用法：`python3 ai_score.py [--book <书名>] [--chapters N]`
 
 8 维加权评分：模板句式(25%)、AI连接词(20%)、成语密度(15%)、排比密度(15%)、抽象表达(10%)、冗余(10%)、被动语态(5%)、陈词滥调(0%)。

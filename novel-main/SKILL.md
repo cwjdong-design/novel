@@ -262,7 +262,7 @@ python3 ~/.hermes/skills/novel/scripts/review_scan.py ~/novels/books/<书名>/01
 ```
 任一项「否」→ 该章需注入爽点后再次审查。
 
-**读者视角审查**（每 3 章强制执行，`knowledge/读者审查标准.md`）：
+**读者视角审查**（每 3 章强制执行，`references/case-studies/读者审查标准.md`）：
 单章写完后放在上下文中连读 3 章，用 Claude Code opus 以 20 年网文读者身份审查：
 ```bash
 claude -p "$(cat /tmp/reader_review_N章.txt)" --model opus --max-turns 30 --dangerously-skip-permissions

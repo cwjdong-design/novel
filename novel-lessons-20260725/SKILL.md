@@ -136,7 +136,7 @@ category: novel
 ### 读者审查
 - 每3章用 opus 以20年网文读者身份审查
 - 读者说「想弃」→重写；「想追」→保留结构微调
-- 审查标准文件：`knowledge/读者审查标准.md`
+- 审查标准文件：`references/case-studies/读者审查标准.md`
 
 ## 叙事节奏教训
 

@@ -119,11 +119,11 @@ mkdir -p ~/novels/books/<书名>/{00-大纲细纲/分卷细纲,01-正文存稿,0
 mkdir -p ~/.hermes/skills/novel/_state
 ```
 
-**首次运行检查**：如果 `~/novels/_shared/logs/`、`~/novels/_shared/backups/` 和 `~/.hermes/skills/novel/scripts/` 不存在，自动创建：
+**首次运行检查**：如果 `~/novels/_shared/logs/` 和 `~/novels/_shared/backups/` 不存在，自动创建：
 ```bash
-mkdir -p ~/novels/_shared/{logs,backups,scripts}
+mkdir -p ~/novels/_shared/{logs,backups}
 ```
-这两个目录供 novel-cron 每日巡检写入日志和全局备份使用。
+这两个目录供 novel-cron 每日巡检写入日志和全局备份使用。脚本统一存放在 `~/.hermes/skills/novel/scripts/`（实体），`~/novels/_shared/scripts/` 仅保留软链接兼容旧路径。
 
 **最终目录结构**：
 ```
@@ -148,8 +148,7 @@ mkdir -p ~/novels/_shared/{logs,backups,scripts}
 
 ~/novels/_shared/              # 首次运行时自动创建
 ├── logs/                      # novel-cron 每日巡检日志
-├── backups/                   # novel-cron 每日全局备份
-└── scripts/                   # novel-cron 独立脚本文件（从 MD 中提取的 .py 文件）
+└── backups/                   # cron 每日全量备份
 ```
 
 ---

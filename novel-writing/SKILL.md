@@ -74,6 +74,25 @@ category: novel
 | `references/case-studies/deep-review-tool-pitfalls.md` | 深度审查工具陷阱：白名单误报、路径、参数、跨文档同步滞后检测 |
 | `references/case-studies/layout-period-slop.md` | 布局期爽点衰减检测：连续无打脸/无结算/钩子缺失/字数下降的信号阈值与对策 |
 
+### 完整 references 索引（2026-08-01 重构后）
+
+**通用方法论（`references/general/`）**——按需参考，核心流程已内联到各技能：
+- `batch-text-normalization.md` — 批量文本规范化（全角/标点/去重）
+- `cross-file-update-checklist.md` — 跨文件同步更新检查清单
+- `multi-file-skill-debugging.md` — 多文件技能调试方法
+- `script-health-check.md` — 脚本健康检查（引用路径完整性验证）
+- `skill-iteration-workflow.md` — 技能迭代工作流
+- `writing-rhythm.md` — 写作节奏分析
+- `workflow-lock.md` — 流程锁：novel_step.sh 防跳步机制
+- `progress-format.md` — 进度 JSON 格式与中断恢复（novel-main 引用）
+
+**特定书复盘（`references/case-studies/`）**——方法论可参考，具体数据（章号/人物/地名/数字）来自特定书籍，不具有普适性：
+- `reader-review-methodology.md` / `character-arc-case-study.md` / `shuangdian-case-study.md` — 编辑模式案例
+- `worldview-v3.5.md` / `worldview-v4.0.md` / `worldbuilding-lessons-20260727.md` — 世界观建设复盘
+- `opus-hallucination-patterns.md` / `opus-anti-patterns.md` / `claude-code-pitfalls.md` / `delegate-pitfalls.md` — AI幻觉与防御
+- `slop-recovery-techniques.md` / `layout-period-slop.md` / `system-numbers.md` / `deep-review-tool-pitfalls.md` / `bulk-review-workflow.md` / `深度审查方法论.md` / `review-checklist.md` / `读者审查标准.md` / `爽点注入方法论.md` / `系统面板设计规律.md` / `fanqie-publishing.md` / `de-book-specificization.md` / `skill-decoupling-patterns.md` / `skill-architecture-review.md` / `lessons-learned.md`
+- 所有 case-studies 文件均带「⚠️ 特定书籍复盘文档」标注，数据不通用
+
 ### 分卷细纲同步铁律
 
 > **卷号铁律**：分卷结构由该书大纲定义。禁止在任何地方（骨架/章节规划/分卷细纲/口头）混淆卷号与章节号。卷末章号以大纲为准。
