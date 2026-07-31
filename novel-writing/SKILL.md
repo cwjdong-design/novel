@@ -141,7 +141,7 @@ python3 ~/novels/_shared/scripts/consistency_check.py --book <书名>
 | `references/general/cross-file-update-checklist.md` | 修改全局标准时必读：跨文件影响排查清单 |
 | `references/case-studies/de-book-specificization.md` | 去书特定化审查流程：从技能文件中移除硬编码书数据，替换为配置引用 |
 | `references/case-studies/skill-decoupling-patterns.md` | 技能解耦方法论：5步法将实例特定数据从通用技能框架中剥离（配置外置化、批量修改、grep验证）+ 开源发布流程（五类零残留验证、git初始化、回测验证、多轮审查闭环） |
-| `references/skill-architecture-review.md` | 技能框架架构审查与重构方法论：诊断维度（扁平vs子目录/文件大小/重复/脚本分裂/references分类）、重构安全协议（git tag备份→调查→分任务commit→软链接兼容→真实数据回测→独立审查） |
+| `references/case-studies/skill-architecture-review.md` | 技能框架架构审查与重构方法论：诊断维度（扁平vs子目录/文件大小/重复/脚本分裂/references分类）、重构安全协议（git tag备份→调查→分任务commit→软链接兼容→真实数据回测→独立审查） |
 
 ## 作者档案
 - 风格：直接、不煽情、冷幽默、冷感叙述
