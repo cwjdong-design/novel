@@ -140,7 +140,7 @@ python3 ~/novels/_shared/scripts/consistency_check.py --book <书名>
 > `novel_step.sh` 的 DRAFT 验证已改为委托 `review_scan.py --book`，不再内嵌硬编码列表。
 | `references/cross-file-update-checklist.md` | 修改全局标准时必读：跨文件影响排查清单 |
 | `references/de-book-specificization.md` | 去书特定化审查流程：从技能文件中移除硬编码书数据，替换为配置引用 |
-| `references/skill-decoupling-patterns.md` | 技能解耦方法论：5步法将实例特定数据从通用技能框架中剥离（配置外置化、批量修改、grep验证） |
+| `references/skill-decoupling-patterns.md` | 技能解耦方法论：5步法将实例特定数据从通用技能框架中剥离（配置外置化、批量修改、grep验证）+ 开源发布流程（五类零残留验证、git初始化、回测验证、多轮审查闭环） |
 
 ## 作者档案
 - 风格：直接、不煽情、冷幽默、冷感叙述
