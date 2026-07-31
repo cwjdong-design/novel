@@ -1,0 +1,179 @@
+---
+name: novel-publishing
+description: 网文平台半自动发布 — 登录、草稿准备、发布、状态核对。覆盖番茄/七猫/百度作家平台的技术操作流程。
+category: novel
+---
+
+# 网文平台半自动发布
+
+## 概述
+
+通过 Hermes 浏览器工具在作者后台完成章节的半自动发布。核心流程：扫码登录 → 读取本地 MD → 填入后台 → 保存草稿 → 人工确认 → 发布。
+
+参考 `fanqie-author-publish` (owlco001/owlco001) GitHub 技能包的工作流设计。
+
+## 触发条件
+
+- 「发布这章到番茄」「把XX章发到后台」「准备草稿」「检查发布状态」
+- 任何涉及到作者后台操作章节的请求
+
+## 安全铁律
+
+1. **永远先存草稿，再考虑发布**。没有例外。
+2. **发布动作前必须复述作品名和章节标题**，等用户明确确认（如「确认发布」）。
+3. **遇到验证码/风控/页面结构变化 → 立即停止**，不要盲点按钮。
+4. **每步操作后先验证状态**，确认成功再继续。
+5. **每关键节点截图留痕**（编辑器加载、草稿保存、发布成功）。
+6. **不要要求用户提供密码**。用扫码登录。
+7. **不要重复点击发布按钮**。发布结果不明确时先检查章节列表。
+
+## 通用工作流
+
+### 1. 登录（Playwright 固定 profile — 番茄已验证）
+
+```python
+from playwright.sync_api import sync_playwright
+p = sync_playwright().start()
+ctx = p.chromium.launch_persistent_context(
+    user_data_dir='~/.hermes/browser-profiles/fanqie',
+    headless=False,
+)
+```
+
+登录态持久化：同一 `user_data_dir` 内 cookies 跨会话保持。用户只需在 Playwright Chromium 中手动登录一次（扫码或SMS）。
+
+### 2. 登录后导航
+
+登录成功后，按以下顺序操作：
+1. 确认在作家后台首页
+2. 定位目标作品 → 进入作品管理页
+3. 进入章节管理 → 选择「新建章节」或「编辑草稿」
+
+### 3. prepare_draft（准备草稿）
+
+```
+输入：book_name, chapter_title, chapter_body, source_file
+输出：草稿已保存 / 失败原因
+```
+
+步骤：
+1. 确认目标作品、章节标题、正文
+2. 在编辑器中填入标题
+3. 填入正文（从本地 MD 文件读取）
+4. 等待编辑器接收内容后，确认内容正确
+5. 点击「保存草稿」
+6. 等待成功提示
+7. 截图存档
+
+### 4. review（发布前检查）
+
+检查项：
+- 作品名称正确
+- 章节标题正确
+- 正文非空且无截断
+- 草稿保存状态正常
+- 发布按钮可用
+
+输出：`ready to publish` / `not ready` + 阻塞原因
+
+### 5. publish（发布）
+
+仅在用户明确确认后执行。
+
+步骤：
+1. 复述作品名和章节标题
+2. 等待用户回复「确认发布」
+3. 点击发布
+4. 如有确认弹窗，核对后确认
+5. 等待成功提示
+6. 截图存档
+7. 回到章节列表确认状态
+
+### 6. reconcile（核对状态）
+
+对比平台章节列表和本地 MD 文件：
+- 哪些章已发布
+- 哪些是草稿
+- 哪些缺失
+- 标题是否一致
+
+## 状态机
+
+```
+pending → backend_opened → book_selected → editor_opened
+       → draft_loaded → draft_saved → awaiting_confirmation
+       → published_verified
+```
+
+失败路径：任何步骤异常 → `failed_needs_review`，报告最后成功步骤和阻塞原因。
+
+## 输入格式
+
+从本地 MD 文件构造：
+
+```json
+{
+  "book_name": "作品名",
+  "chapter_title": "第N章 标题",
+  "chapter_body": "正文内容（从MD读取）",
+  "action": "prepare_draft|review|publish|reconcile",
+  "source_file": "/absolute/path/to/chapter.md",
+  "notes": "可选备注，如：发布前检查结尾伏笔"
+}
+```
+
+## 本地章节 → 后台映射
+
+后台状态 vs 本地 MD 的处理策略：
+
+| 后台状态 | 本地有修改 | 操作 |
+|---------|-----------|------|
+| 已发布 | 有 | 谨慎：已发布章节不建议覆盖，除非是紧急修文 |
+| 定时发布 | 有 | 取消定时 → 修改草稿 → 重新定时/直接发布 |
+| 草稿 | 有 | 直接覆盖草稿内容 |
+| 不存在 | — | 新建章节 |
+
+## 平台特定信息
+
+### 番茄小说
+
+> 详细技术细节见 `fanqie-publisher` 技能（BOOK_ID、选择器、弹窗处理、已发布vs待发布分支）。
+
+**当前方案**：Playwright + 固定浏览器 profile（`~/.hermes/browser-profiles/fanqie`），不用 Hermes browser 工具。
+
+核心差异：
+- **新建章节**：有序号+标题两个字段，有"存草稿"按钮
+- **编辑已发布章节**：只有标题字段，下一步 → AI选"否" → 确认发布
+- **编辑待发布定时章节**：下一步可能不弹确认窗，自动保存
+- **正文必用 innerHTML**：ProseMirror 拒绝所有键盘粘贴/输入
+
+### 七猫小说
+- 同规格技能骨架存在：`qimao-author-publish`（GitHub 同仓库）
+- 页面结构待校准
+
+### 百度作家平台
+- 同规格技能骨架存在：`baidu-author-publish`（GitHub 同仓库）
+- 页面结构待校准
+
+## 失败处理
+
+任何步骤失败时：
+1. 立即停止流程
+2. 记录最后成功步骤
+3. 能截图就截图
+4. 告诉用户具体失败点和需要的手动操作
+
+常见失败：
+- **登录失效** → `pkill -f "Google Chrome for Testing"` 后重启，用固定 profile 重新登录
+- **ProseMirror 不接收内容** → 必须用 `innerHTML` 直接写 DOM，paste/keyboard 全部无效
+- **弹窗挡操作** → 先 Escape 两次，再 force=True 点击按钮
+- **".first()" 报错** → Playwright 1.60 不用 `.first()`，直接用 selector
+- **"确认发布"找不到** → 待发布定时章节无确认弹窗，修改后自动保存即完成
+- 验证码/风控 → 停止，让用户手动处理
+
+## 注意事项
+
+- 此技能处理的是**已写好的章节发布**，不涉及写作流程
+- 写作流程见 `novel-writing`、`novel-main` 等技能
+- 平台运营策略见 `novel-platform`
+- 不要试图提取/导出/搬运 Cookie，用固定浏览器 profile 保持登录态

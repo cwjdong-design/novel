@@ -1,0 +1,16 @@
+# 番茄小说 AI 创作系统 - Python 依赖
+# 核心脚本仅需标准库，以下为可选依赖
+
+# 违禁词扫描 / 伏笔检测 / 章节统计 — 仅需标准库，无额外依赖
+
+# AI味评分 (ai_score.py) — 可选：jieba 分词提升准确度
+jieba>=0.42
+
+# 热榜拉取 (trending_news.py) — 可选：RSS 解析
+feedparser>=6.0
+
+# 番茄发布 (publish_chapter.py) — Playwright 浏览器自动化
+playwright>=1.40
+
+# 安装 Playwright 浏览器（首次使用发布功能时执行）：
+#   playwright install chromium

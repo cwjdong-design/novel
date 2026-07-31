@@ -1,0 +1,18 @@
+# 运行时状态（不分享）
+_state/
+
+# 浏览器 profile
+browser-profiles/
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+
+# 临时文件
+*.tmp
+*.bak
+*~
