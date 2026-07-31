@@ -4,18 +4,9 @@ description: 番茄小说章节全流程创作 — 统筹调用所有子技能�
 category: novel
 ---
 
-<!--
-  修改记录：
-  - 2026-07-27：MILESTONE 审查维度从5项扩展为6项，新增「章节规划同步」——每5章强制回填已完成章的标题/事件，检查未来章规划，同步分卷细纲。
-  - 2026-07-25：步骤6 TRACK 增加「前文时间线速查」输出，供下一章 DRAFT 使用（最近3章梗概+时间标记，同时写入 `06-追踪记录/前文时间线速查.md`）。
-  - 2026-07-25：步骤4 REVIEW 增加「审查自检清单」——时间线一致性、人物存活状态、字数、禁用词、人物注册，逐条检查后方可输出审查报告。
-  - 2026-07-25：步骤3 DRAFT prompt 增加「前文时间线速查」区块，传入最近3章梗概和时间标记到 opus prompt，防时间线错乱。（骨架模式v4.0已废弃此条，约束固化在骨架中）
-  - 2026-07-25：步骤3 DRAFT prompt 开头注入 `opus铁律.md` 完整内容（地名白名单、人物存活状态、时间线、关键数字、禁止事项），防止 opus 自创世界观。每次 DRAFT 调用 opus 时强制附带。
-  - 2026-07-25：步骤5 POLISH 同样改成 Claude Code CLI 执行，传(初稿+审查报告)给它，取回打磨后的定稿。失败fallback保持不变（Claude Code CLI 调用失败时降级为内联执行）。
-  - 2026-07-25：新增「里程碑审查」步骤（MILESTONE）——每写完 5 章（第 5/10/15...章），在 TRACK 后自动触发，检查①前后5章连贯性 ②伏笔埋坑状态 ③人物弧线推进 ④主线进度 ⑤时间线全链路一致性。一级问题标记阻塞，发回 PREP 修正对应章节，不通过不允许进入下一批 5 章。
--->
-
 # 番茄小说主技能（v2.0）
+
+> 版本历史见 git 提交记录，不在技能正文维护。
 
 ## 触发条件
 
@@ -125,12 +116,6 @@ IDLE → PREP → PLOT → DRAFT → REVIEW → POLISH → TRACK → [章节号%
 <从错误库提取，如无则写「无」>
 ```
 
-**失败 Fallback**：
-- 如果人物卡 / 大纲等关键文件缺失 → 中断，提示用户补全
-- 如果读取超时 / token 溢出 → 自动压缩上下文（只保留最近 2 章 + 伏笔表）
-- 重试 2 次后仍失败 → 询问用户「继续尝试 / 跳过 PREP 直接手写上下文 / 取消」
-
-**自动化**：🔧 全自动，除非 fallback 触发
 
 ---
 
@@ -170,12 +155,6 @@ IDLE → PREP → PLOT → DRAFT → REVIEW → POLISH → TRACK → [章节号%
 - 主角：XXX → XXX
 ```
 
-**失败 Fallback**：
-- 情节节点 < 3 个 → 重新推演（调整 prompt）
-- 钩子太弱（AI 自评 < 3/5）→ 单独重新设计钩子
-- 重试 2 次仍不理想 → 展示当前推演，让用户人工调整
-
-**自动化**：🤖 自动，推演完成后展示给用户
 
 ---
 
@@ -246,13 +225,6 @@ $SKEL
 
 **字数要求**：2000-3000 字（番茄标准），目标 2500 字，±300 字容差
 
-**失败 Fallback**：
-- 字数严重偏差（< 1800 或 > 3200）→ 调整 prompt 要求缩/扩
-- 对话占比明显 < 35% → 标记，进入 POLISH 时重点处理
-- 生成中断（token 限制）→ 分段续写
-- Claude Code CLI 调用失败 → 降级为内联生成（用 Hermes 自身能力执行 novel-draft 技能，保持原有 fallback 逻辑）
-
-**自动化**：🤖 自动派发 Claude Code CLI，不中断等待用户
 
 ---
 
@@ -353,11 +325,6 @@ claude -p "$(cat /tmp/reader_review_N章.txt)" --model opus --max-turns 30 --dan
 - 存在一级问题（🔴或🚨） → ⚠️ 不通过
 - 仅存在二级问题（🟡建议） → ✅ 通过（问题记录，但不阻塞）
 
-**失败 Fallback**：
-- ⚠️ 不通过 → 自动进入步骤 5（POLISH），打磨后自动回到步骤 4 重新审查（最多循环 3 次）
-- 3 次审查仍不通过 → 中断，展示问题清单，让用户决策「继续打磨 / 手动修改后继续 / 接受当前版本」
-
-**自动化**：🤖 自动审查 + 自动循环，最多 3 次后需用户确认
 
 ---
 
@@ -414,12 +381,6 @@ claude -p "$(cat /tmp/novel_chX_polish_prompt.txt)" --model opus --max-turns 15 
 - 审查不通过的 → 先修复审查问题，再标准打磨
 - **打磨 ≠ 重写**，保持原有剧情结构
 
-**失败 Fallback**：
-- 打磨后字数大幅变化（> 20%波动）→ 回退初稿，重新轻量打磨
-- 打磨后引入新问题 → 对比初稿 diff，撤销问题修改
-- Claude Code CLI 调用失败 → 降级为内联执行（用 Hermes 自身能力执行 novel-polish 技能，保持原有 fallback 逻辑）
-
-**自动化**：🤖 自动派发 Claude Code CLI
 
 **REVIEW↔POLISH 循环状态处理**：
 - POLISH 完成后，若上轮 REVIEW 判定为 ⚠️ 不通过且循环未达 3 次上限，则自动回到步骤 4 REVIEW 重审。
@@ -473,11 +434,6 @@ X / Y 章（XX%）
 > ℹ️ 首次写第1章时仅输出 Ch.1 行；第2章时输出 Ch.1–2；第3章起固定输出最近3章。每完成一章后，将此表追加/更新到 `06-追踪记录/前文时间线速查.md`（只保留最近3行）。
 ```
 
-**失败 Fallback**：
-- 更新文件写入失败 → 重试写入，仍失败则保存到 `_state/` 目录，下次 PREP 时合并
-- 人物卡解析失败 → 跳过该人物，记录到 `04-错误库/修正记录.md`
-
-**自动化**：🔧 全自动
 
 ---
 
@@ -584,11 +540,6 @@ X / Y 章（XX%）
 4. 用户修正后，从修正后的章节重新走 7 步流程，到该章的 TRACK 后再次触发 MILESTONE
 5. 用户说「继续下一章」「写第 X 章」时，前置检查先检测 `milestone_blocked` 状态 → 若存在则拦截并提示「⚠️ 第 N 章里程碑审查未通过，请先修正阻塞问题」
 
-**失败 Fallback**：
-- 审查所需文件缺失（如分卷细纲、人物弧线追踪）→ 跳过对应维度，记录 `⚠️ 维度X 文件缺失，跳过检查`，不阻塞
-- 审查内容过大（token 溢出）→ 分 2 轮执行（前 3 项 + 后 2 项），合并报告
-
-**自动化**：🤖 自动执行（5 的倍数章节时），阻塞时需用户介入
 
 ---
 
@@ -615,11 +566,6 @@ X / Y 章（XX%）
 - 备份版本：v<version>
 ```
 
-**失败 Fallback**：
-- 目录创建失败 → 手动 mkdir + 重试
-- tar.gz 创建失败 → 跳过打包，仅保留文件备份
-
-**自动化**：🔧 全自动
 
 ---
 
@@ -645,91 +591,13 @@ X / Y 章（XX%）
 
 ## 中间状态保存与中断恢复
 
-### 进度文件格式
+> 📄 完整机制（进度文件格式/状态枚举/保存时机/恢复流程/技能缓存）见 `references/general/progress-format.md`。
 
-文件路径：`~/.hermes/skills/novel/_state/<书名>_progress.json`
-
-```json
-{
-  "book_name": "<书名>",
-  "current_chapter": 12,
-  "status": "prep_completed",
-  "steps_completed": ["prep", "plot"],
-  "current_step": "draft",
-  "prep_output": "<步骤1 的输出>",
-  "plot_output": "<步骤2 的输出>",
-  "draft_output": null,
-  "milestone_output": null,
-  "milestone_blocked": false,
-  "last_updated": "2026-07-24 15:30:00",
-  "retry_counts": {
-    "review_polish_loop": 1
-  }
-}
-```
-
-### 状态枚举
-
-| 状态 | 含义 | 恢复行为 |
-|------|------|---------|
-| `idle` | 未开始 | 从 PREP 开始 |
-| `prep_completed` | 步骤1 完成 | 从 PLOT 开始 |
-| `plot_completed` | 步骤2 完成 | 从 DRAFT 开始 |
-| `draft_completed` | 步骤3 完成 | 从 REVIEW 开始 |
-| `review_completed` | 步骤4 完成 | 从 POLISH 开始 |
-| `polish_completed` | 步骤5 完成 | 从 TRACK 开始 |
-| `track_completed` | 步骤6 完成 | 检查章节号是5的倍数→MILESTONE，否则→BACKUP |
-| `milestone_completed` | 步骤7 完成（仅 5 的倍数章） | 从 BACKUP 开始 |
-| `milestone_blocked` | 里程碑审查未通过 | 阻塞状态，不允许新章节；需用户修正后重新触发 |
-| `completed` | 全部完成 | 展示统计（不重新执行） |
-| `failed` | 某步骤失败 | 从失败步骤重试 |
-
-### 保存时机
-
-每步完成后自动保存进度文件。在以下节点保存：
-1. PREP 输出生成后
-2. PLOT 输出生成后
-3. DRAFT 输出生成后
-4. REVIEW 输出生成后（通过或不通过都保存）
-5. POLISH 输出生成后——若上轮 REVIEW 判定不通过且循环次数 < 3，则 `current_step` 回退为 `"review"`，`steps_completed` 移除 `"review"` 和 `"polish"`，`retry_counts.review_polish_loop += 1`；否则正常推进至 TRACK
-6. TRACK 完成文件写入后——章节号是 5 的倍数 → 自动进入 MILESTONE；否则 → 自动进入 BACKUP
-7. MILESTONE 审查完成后（通过或不通过都保存）——通过则 `current_step` 设为 `"milestone_completed"`，进入 BACKUP；不通过则 `current_step` 设为 `"milestone_blocked"`，`status` 设为 `"failed"`，`milestone_blocked` 设为 `true`
-8. BACKUP 完成后（标记 completed）
-
-### 恢复流程
-
-1. 用户触发 novel-main → 前置检查阶段读取 `_state/<书名>_progress.json`
-2. 如果 `milestone_blocked == true` → 拦截，提示阻塞信息，不允许继续
-3. 如果 `status != 'completed'` → 提示：「检测到第 X 章中断在 [步骤名]，是否从中断点继续？(Y/n)」
-4. 用户确认 → 从 `current_step` 开始，跳过 `steps_completed` 中的步骤
-5. 用户拒绝 → 清除进度文件，从 PREP 重新开始
-6. 如果 `status == 'completed'` → 正常开始新章节
-
-### 技能内容缓存（中断恢复优化）
-
-为减少中断恢复时的 token 消耗，进度文件中缓存已加载的子技能内容：
-
-1. **保存时**：每个步骤完成后，将该步骤调用的子技能内容序列化到 `cached_skills` 字段中
-2. **恢复时**：先检查 `_state/<书名>_progress.json` 中 `cached_skills` 是否包含 `current_step` 对应子技能的完整内容
-3. **命中缓存** → 直接使用缓存内容，不重新 `skill_view`（节省 ~2-5k tokens/步）
-4. **缓存未命中** → 降级为 `skill_view(name='novel-xxx')` 重新加载
-
-**缓存结构**（追加到进度 JSON 中）：
-```json
-{
-  "cached_skills": {
-    "novel-prep": "<已加载的 SKILL.md 完整内容>",
-    "novel-plot": "<已加载的 SKILL.md 完整内容>",
-    "novel-draft": null,
-    "novel-review": null,
-    "novel-polish": null,
-    "novel-track": null,
-    "novel-backup": null
-  }
-}
-```
-
-> **注意**：在 1M 上下文的模型下，~25k tokens（7 个子技能全量加载）不是瓶颈问题。此优化为大型项目（如多书并行、超长上下文积累）预留。
+**核心要点：**
+- 进度文件：`~/.hermes/skills/novel/_state/<书名>_progress.json`
+- 每步完成后自动保存进度，中断后询问用户是否从断点继续
+- `milestone_blocked` 状态拦截新章节，需先修正阻塞问题
+- 前置检查阶段读取进度文件，检测 `milestone_blocked` 和 `status != 'completed'`
 
 ---
 
