@@ -148,7 +148,7 @@ novel_step.sh check DRAFT   # ⚠️ BLOCKED 如果缺 PLOT
 novel_step.sh done DRAFT    # 标记完成
 ```
 
-详见 `novel-writing` → `references/workflow-lock.md`
+详见 `novel-writing` → `references/general/workflow-lock.md`
 
 ### 跳步信号
 - 连续两章之间的步骤越来越少
@@ -262,7 +262,7 @@ novel_step.sh done DRAFT    # 标记完成
 
 ### 完整参考文档
 
-见 `references/reader-review-methodology.md`——包含审查人设、四维框架、全量审查输出格式、评审纪律、对抗心软检查清单、分批审查策略。
+见 `references/case-studies/reader-review-methodology.md`——包含审查人设、四维框架、全量审查输出格式、评审纪律、对抗心软检查清单、分批审查策略。
 
 ## 十、深度审查→修复执行流水线
 

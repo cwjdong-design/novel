@@ -252,7 +252,7 @@ python3 ~/.hermes/skills/novel/scripts/review_scan.py ~/novels/books/<书名>/01
 
 **第 2 步：爽点注入检查（强制 5 项）**
 
-**爽点注入检查**（强制，加载 `novel-writing` → `references/爽点注入方法论.md`）：
+**爽点注入检查**（强制，加载 `novel-writing` → `references/case-studies/爽点注入方法论.md`）：
 ```markdown
 [ ] 系统钱花出去了？花给谁？对方什么反应？
 [ ] 有人不理解 MC 的能力/资源？MC 解释了吗？

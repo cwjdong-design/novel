@@ -16,7 +16,7 @@ category: novel
 >
 > 向技能文件中写入任何角色名、地名、数字公式、面板字段名、方言词表之前，先问：这属于方法论还是属于某本书？如果是后者，写入书配置而非技能文件。
 >
-> 如果发现技能文件中混入了硬编码书数据，按 `references/de-book-specificization.md` 的流程清理。
+> 如果发现技能文件中混入了硬编码书数据，按 `references/case-studies/de-book-specificization.md` 的流程清理。
 
 ## 书配置机制（v5.0 新增）
 
@@ -59,13 +59,13 @@ category: novel
 | `knowledge/opus铁律.md` | ⚠️ 骨架模式下不再注入DRAFT prompt。保留作 review 参考和最终仲裁文档。约束已固化在章节骨架中 |
 | `knowledge/违禁词库.json` | 8分类违禁词(v2.1)，含系统违禁术语+AI禁用词，cron扫描用 |
 | `knowledge/作者设定.md` | 作者风格与偏好 |
-| `references/读者审查标准.md` | 20年网文读者身份审查：7个必答问题、审查时机、执行命令、结果处理 |
-| `references/writing-rhythm.md` | 写作节奏分析 |
-| `references/workflow-lock.md` | 流程锁：novel_step.sh 防跳步机制 |
-| `references/review-checklist.md` | 8步全量一致性审查清单（每卷完成/设定变更后触发） |
-| `references/opus-hallucination-patterns.md` | opus 重写时数字/人名/地名幻觉模式及防御 |
-| `references/deep-review-tool-pitfalls.md` | 深度审查工具陷阱：白名单误报、路径、参数、跨文档同步滞后检测 |
-| `references/layout-period-slop.md` | 布局期爽点衰减检测：连续无打脸/无结算/钩子缺失/字数下降的信号阈值与对策 |
+| `references/case-studies/读者审查标准.md` | 20年网文读者身份审查：7个必答问题、审查时机、执行命令、结果处理 |
+| `references/general/writing-rhythm.md` | 写作节奏分析 |
+| `references/general/workflow-lock.md` | 流程锁：novel_step.sh 防跳步机制 |
+| `references/case-studies/review-checklist.md` | 8步全量一致性审查清单（每卷完成/设定变更后触发） |
+| `references/case-studies/opus-hallucination-patterns.md` | opus 重写时数字/人名/地名幻觉模式及防御 |
+| `references/case-studies/deep-review-tool-pitfalls.md` | 深度审查工具陷阱：白名单误报、路径、参数、跨文档同步滞后检测 |
+| `references/case-studies/layout-period-slop.md` | 布局期爽点衰减检测：连续无打脸/无结算/钩子缺失/字数下降的信号阈值与对策 |
 
 ### 分卷细纲同步铁律
 
@@ -74,7 +74,7 @@ category: novel
 > ⚠️ 教训（通用）：分卷细纲与正文不同步、角色身份在细纲中与正文不一致——大纲漂移会导致 DRAFT prompt 注入错误上下文。
 
 - **每次世界观变更后，必须对照正文重写对应卷的分卷细纲**——以正文和人物卡为权威源。
-- **每完成 10 章或一卷结束后，触发全量一致性审查**（`references/review-checklist.md`），含漂移检测。
+- **每完成 10 章或一卷结束后，触发全量一致性审查**（`references/case-studies/review-checklist.md`），含漂移检测。
 - **章节规划同步**：MILESTONE 每 5 章强制执行维度 6——已完成章回填实际标题/事件，未来章检查占位，分卷细纲对表。章号已超过规划范围时回填优先于重规划。
 - **规划漂移警告**：当实际写作路径与章节规划偏离 >2 章时，规划文件变为毒素——DRAFT 注入过时上下文导致产出与前后文脱节。预防：MILESTONE 维度 6 + PREP 时对比规划与实际状态。
 - **审查工具链**（路径可配置，见 `书配置.md`）：
@@ -97,13 +97,13 @@ category: novel
 |------|-----------|---------|
 | 自动扫描 | `scripts/review_scan.py`（可配置） | 每章 DRAFT 后自动运行（系统术语/地名白名单/真实地名黑名单/AI禁用词/章末违禁标记/标题格式） |
 | 跨文档一致性 | `consistency_check.py`（可配置） | REVIEW 步骤强制执行（7维交叉校验） |
-| 爽点注入 | `references/爽点注入方法论.md` | REVIEW 步骤强制执行 5 项检查 |
-| 读者审查 | `references/读者审查标准.md` | 每 3 章 Claude Code opus 读者身份审查（7问模板+执行命令） |
+| 爽点注入 | `references/case-studies/爽点注入方法论.md` | REVIEW 步骤强制执行 5 项检查 |
+| 读者审查 | `references/case-studies/读者审查标准.md` | 每 3 章 Claude Code opus 读者身份审查（7问模板+执行命令） |
 | 广告打断 | `novel-platform` | 每 3 章检查章末钩子强度 |
 | 人物弧光 | `novel-character` | PREP 步骤 Want/Need 追踪 |
-| 全量审查 | `references/review-checklist.md` | 每卷完成/世界观变更后：8关键字搜索+人物卡/大纲对齐 |
-| 批量审查 | `references/bulk-review-workflow.md` | 10-30章级全量批量审查：自动扫描+字数统计+爽点检查+合规检查 |
-| 爽点追回 | `references/slop-recovery-techniques.md` | 深度审查后章间飙爽点：6技法+注入SOP |
+| 全量审查 | `references/case-studies/review-checklist.md` | 每卷完成/世界观变更后：8关键字搜索+人物卡/大纲对齐 |
+| 批量审查 | `references/case-studies/bulk-review-workflow.md` | 10-30章级全量批量审查：自动扫描+字数统计+爽点检查+合规检查 |
+| 爽点追回 | `references/case-studies/slop-recovery-techniques.md` | 深度审查后章间飙爽点：6技法+注入SOP |
 | 系统面板合规 | `书配置.md` 中定义的面板规范 | DRAFT后自动扫描 + 人工核对 |
 
 ## 8步创作循环（骨架模式·v4.0）
@@ -138,9 +138,9 @@ python3 ~/novels/_shared/scripts/consistency_check.py --book <书名>
 ```
 > `--config <路径>` 可直接指定书配置.md 的完整路径。书配置缺失时回退到默认规则。
 > `novel_step.sh` 的 DRAFT 验证已改为委托 `review_scan.py --book`，不再内嵌硬编码列表。
-| `references/cross-file-update-checklist.md` | 修改全局标准时必读：跨文件影响排查清单 |
-| `references/de-book-specificization.md` | 去书特定化审查流程：从技能文件中移除硬编码书数据，替换为配置引用 |
-| `references/skill-decoupling-patterns.md` | 技能解耦方法论：5步法将实例特定数据从通用技能框架中剥离（配置外置化、批量修改、grep验证）+ 开源发布流程（五类零残留验证、git初始化、回测验证、多轮审查闭环） |
+| `references/general/cross-file-update-checklist.md` | 修改全局标准时必读：跨文件影响排查清单 |
+| `references/case-studies/de-book-specificization.md` | 去书特定化审查流程：从技能文件中移除硬编码书数据，替换为配置引用 |
+| `references/case-studies/skill-decoupling-patterns.md` | 技能解耦方法论：5步法将实例特定数据从通用技能框架中剥离（配置外置化、批量修改、grep验证）+ 开源发布流程（五类零残留验证、git初始化、回测验证、多轮审查闭环） |
 | `references/skill-architecture-review.md` | 技能框架架构审查与重构方法论：诊断维度（扁平vs子目录/文件大小/重复/脚本分裂/references分类）、重构安全协议（git tag备份→调查→分任务commit→软链接兼容→真实数据回测→独立审查） |
 
 ## 作者档案
@@ -198,7 +198,7 @@ python3 ~/novels/_shared/scripts/consistency_check.py --book <书名>
 ### 爽点铁律
 - 每章 5 项：钱落地、震惊反应、打脸节奏、系统神秘化、收入对比。
 - 系统是武器不是存款——钱必须花出去/被看见/被对比。
-- 模板见 `references/爽点注入方法论.md`。
+- 模板见 `references/case-studies/爽点注入方法论.md`。
 
 ### 审查前置
 - DRAFT 后先跑 `review_scan.py` 扫描地名/禁用词/系统违规，零问题再人工 REVIEW。
@@ -218,12 +218,12 @@ python3 ~/novels/_shared/scripts/consistency_check.py --book <书名>
   2. 人物存活状态（活人不能被写成"XX活着的时候"）
   3. 角色名一致性（grep 校验所有输出中的名字是否在人物库存在）
   4. 方言用量检查：遵从 `书配置.md` 中的方言限制。主角/叙述视角角色不应使用方言。方言只能用于配角自然腔调的点缀。
-  5. opus 反模式扫描（见 `references/opus-anti-patterns.md`）：命中即发回重写
+  5. opus 反模式扫描（见 `references/case-studies/opus-anti-patterns.md`）：命中即发回重写
   6. Markdown残留检查：搜索 `---`（分割线）、`**`（加粗）、`` ` ``（代码块）、`> `（引用）→ 命中即patch删除。番茄平台不支持Markdown渲染。
 
 ### opus 反模式扫描
 - 搜索 opus 常见反模式标记词（动态上浮、循环状态、回报周期、预估等）→ 命中即发回重写
-- **重写时额外幻觉**：opus 在重写（非初稿）时数字幻觉远超初稿——面积夸大、系统指标自创、人名地名自创。详见 `references/opus-hallucination-patterns.md`
+- **重写时额外幻觉**：opus 在重写（非初稿）时数字幻觉远超初稿——面积夸大、系统指标自创、人名地名自创。详见 `references/case-studies/opus-hallucination-patterns.md`
 - 防御：重写 prompt 必须注入铁律查表 + 输出后立即 `review_scan.py` 扫描
 - **真实地名黑名单**：`review_scan.py` 从 `书配置.md` 读取该书对标区域的黑名单地名列表。opus 在架空地名描述中极易自创真实地名——防御：prompt 注入时明确禁止真实地名 + DRAFT 后扫描器拦截。
 - **角色关系反转幻觉**：opus 在重写章末段落时可能将敌对角色改写为盟友。防御：DRAFT 后逐段检查对话双方身份关系，若出现敌对角色对主角使用亲密称呼，发回重写。
@@ -266,7 +266,7 @@ python3 ~/novels/_shared/scripts/consistency_check.py --book <书名>
 - 唯一例外：REVIEW 步骤的数据扫描脚本可以用 delegate_task 派发（非创作类任务）。
 
 ### 代理协作安全规则
-> ⚠️ 子代理极易擅自改名或改身份。详见 `references/delegate-pitfalls.md`。
+> ⚠️ 子代理极易擅自改名或改身份。详见 `references/case-studies/delegate-pitfalls.md`。
 > - 派发前必须在 context 中写：「所有角色名和身份以人物库人物卡为准，禁止自行改名或改身份」
 > - 子代理返回后 grep 校验所有输出文件中的角色名是否在人物库中存在
 
