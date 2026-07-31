@@ -24,7 +24,7 @@
 | **书籍数据** | `~/novels/books/<书名>/` | 每本书的正文、设定、大纲、备份 |
 | **全局日志** | `~/novels/_shared/logs/` | 巡检日志、违禁词扫描报告 |
 | **全局备份** | `~/novels/_shared/backups/` | cron 每日全量备份 |
-| **共享脚本** | `~/novels/_shared/scripts/` | Python/Shell 工具脚本 |
+| **工具脚本** | `~/.hermes/skills/novel/scripts/` | Python/Shell 工具脚本（实体） |
 
 ## 目录结构
 
@@ -156,7 +156,7 @@ REVIEW↔POLISH 最多循环3次。MILESTONE 仅在 5/10/15...章触发。
 
 ## 脚本工具
 
-### 核心脚本（`scripts/` 和 `~/novels/_shared/scripts/`）
+### 核心脚本（`~/.hermes/skills/novel/scripts/`）
 
 | 脚本 | 用途 | 从书配置读取 |
 |------|------|:----------:|

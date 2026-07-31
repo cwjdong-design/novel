@@ -82,6 +82,7 @@ category: novel
 - `multi-file-skill-debugging.md` — 多文件技能调试方法
 - `script-health-check.md` — 脚本健康检查（引用路径完整性验证）
 - `skill-iteration-workflow.md` — 技能迭代工作流
+- `skill-refactor-protocol.md` — ⭐ 技能库安全重构协议：大改动必走（git tag备份→调查→分任务commit→软链接兼容→回测→独立审查→修复→最终tag）+ 瘦身手法 + 审查必查项
 - `writing-rhythm.md` — 写作节奏分析
 - `workflow-lock.md` — 流程锁：novel_step.sh 防跳步机制
 - `progress-format.md` — 进度 JSON 格式与中断恢复（novel-main 引用）
