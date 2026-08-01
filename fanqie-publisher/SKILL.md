@@ -1,6 +1,6 @@
 ---
 name: fanqie-publisher
-description: 番茄小说半自动发布 — Playwright 操作后台新建章节、存草稿
+description: 番茄小说草稿箱投递 — Playwright 操作后台新建章节、存草稿并核对
 category: novel
 ---
 

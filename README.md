@@ -3,6 +3,12 @@
 > 基于 Hermes Agent 技能体系的网文创作全流程框架。
 > 设计为**通用框架**——不绑定任何特定书籍的设定，每本书独立管理自己的世界观/人物/地名/系统面板。
 
+## 开源信息
+
+- **GitHub 仓库**：https://github.com/cwjdong-design/novel
+- **License**：MIT（详见 [LICENSE](LICENSE)）
+- **安装方式**：clone 仓库后放入 `~/.hermes/skills/` 即可使用（依赖：Hermes Agent + Claude Code CLI）
+
 ## 核心理念
 
 **AI 擅长写散文，不擅长造结构。**

@@ -98,7 +98,7 @@ def fill_body(page, body_html):
     time.sleep(3)
 
 
-def publish(chapter_num, md_path, book_id=None, know_ids=None):
+def save_draft(chapter_num, md_path, book_id=None, know_ids=None):
     """新建章节并存入草稿箱；本脚本不具备正式发布能力。"""
     if know_ids is None:
         know_ids = {}
@@ -165,4 +165,4 @@ if __name__ == '__main__':
     know_ids = load_know_ids(args.book)
 
     print(f'📖 BOOK_ID={book_id}, 已知章节={len(know_ids)}个')
-    publish(args.chapter, md_path, book_id, know_ids)
+    save_draft(args.chapter, md_path, book_id, know_ids)

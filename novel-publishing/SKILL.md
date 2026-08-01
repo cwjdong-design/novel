@@ -1,6 +1,6 @@
 ---
 name: novel-publishing
-description: 网文平台半自动发布 — 登录、草稿准备、发布、状态核对。覆盖番茄/七猫/百度作家平台的技术操作流程。
+description: 网文平台草稿箱投递与核对：登录、草稿准备、保存、状态核对。覆盖番茄平台已验证流程。
 category: novel
 ---
 
@@ -8,7 +8,7 @@ category: novel
 
 ## 概述
 
-通过 Hermes 浏览器工具在作者后台完成章节的半自动发布。核心流程：扫码登录 → 读取本地 MD → 填入后台 → 保存草稿 → 人工确认 → 发布。
+通过固定浏览器 profile 在作者后台完成章节草稿箱投递。核心流程：扫码登录 → 读取本地 MD → 填入后台 → 保存草稿 → 草稿箱核对 → 结束。
 
 参考 `fanqie-author-publish` (owlco001/owlco001) GitHub 技能包的工作流设计。
 
@@ -66,16 +66,15 @@ ctx = p.chromium.launch_persistent_context(
 6. 等待成功提示
 7. 截图存档
 
-### 4. review（发布前检查）
+### 4. review（草稿保存前检查）
 
 检查项：
 - 作品名称正确
 - 章节标题正确
 - 正文非空且无截断
-- 草稿保存状态正常
-- 发布按钮可用
+- 「存草稿」按钮可用
 
-输出：`ready to publish` / `not ready` + 阻塞原因
+输出：`ready to save draft` / `not ready` + 阻塞原因
 
 ### 5. reconcile（核对草稿状态）
 
@@ -126,7 +125,7 @@ pending → backend_opened → book_selected → editor_opened
 | 后台状态 | 本地有修改 | 操作 |
 |---------|-----------|------|
 | 已发布 | 有 | 谨慎：已发布章节不建议覆盖，除非是紧急修文 |
-| 定时发布 | 有 | 取消定时 → 修改草稿 → 重新定时/直接发布 |
+| 定时发布 | 有 | 仅识别并报告状态，不取消定时、不修改、不重新定时 |
 | 草稿 | 有 | 直接覆盖草稿内容 |
 | 不存在 | — | 新建章节 |
 
