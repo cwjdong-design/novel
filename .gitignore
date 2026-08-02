@@ -8,6 +8,7 @@ browser-profiles/
 __pycache__/
 *.pyc
 *.pyo
+.pytest_cache/
 
 # macOS
 .DS_Store
@@ -16,3 +17,6 @@ __pycache__/
 *.tmp
 *.bak
 *~
+
+# 一次性计划文件（不属于公开仓库）
+PLAN-*.md

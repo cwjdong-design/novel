@@ -37,17 +37,17 @@
 ```
 ~/.hermes/skills/novel/               # 技能目录（通用）
 ├── README.md                          # 本文件
-├── novel-main.md                      # 主技能：8步状态机调度
-├── novel-prep.md                      # 子技能1：资料整理
-├── novel-plot.md                      # 子技能2：剧情推演
-├── novel-draft.md                     # 子技能3：正文生成
-├── novel-review.md                    # 子技能4：合规审查
-├── novel-polish.md                    # 子技能5：打磨
-├── novel-track.md                     # 子技能6：状态追踪
-├── novel-backup.md                    # 子技能7：版本备份
-├── novel-cron.md                      # 自动化：每日巡检
-├── novel-new-book.md                  # 新书初始化
-├── novel-skeleton/SKILL.md            # 骨架生成
+├── novel-main/SKILL.md                # 主技能：8步状态机调度
+├── novel-prep/SKILL.md                # 子技能1：资料整理
+├── novel-plot/SKILL.md                # 子技能2：剧情推演（含容量门禁）
+├── novel-draft/SKILL.md               # 子技能3：正文生成
+├── novel-review/SKILL.md              # 子技能4：合规审查（含有效内容双门槛）
+├── novel-polish/SKILL.md              # 子技能5：打磨
+├── novel-track/SKILL.md               # 子技能6：状态追踪
+├── novel-backup/SKILL.md              # 子技能7：版本备份
+├── novel-cron/SKILL.md                # 自动化：每日巡检
+├── novel-new-book/SKILL.md            # 新书初始化
+├── novel-skeleton/SKILL.md            # 骨架生成（含容量预审）
 ├── novel-character/SKILL.md           # 人物塑造方法论
 ├── novel-platform/SKILL.md            # 番茄平台运营
 ├── novel-editing-patterns/SKILL.md    # 编辑模式
@@ -57,7 +57,8 @@
 ├── templates/                         # 设定模板
 ├── knowledge/                         # 通用知识库
 ├── scripts/                           # 核心工具脚本
-└── _state/                            # 运行时状态
+├── tests/                             # 契约测试（36项）
+└── _state/                            # 运行时状态（gitignored）
 
 ~/novels/books/<书名>/                  # 每本书独立数据
 ├── 00-大纲细纲/
@@ -115,7 +116,7 @@
 | novel-prep | 子技能 | 由 main 调用 | 书名+章节号 | 上下文摘要 |
 | novel-plot | 子技能 | 由 main 调用 | 大纲+上下文 | 事件+冲突+转折 |
 | novel-skeleton | 子技能 | 由 main 调用 | PREP输出 | 预验证骨架 |
-| novel-draft | 子技能 | 由 main 调用 | 骨架+人物卡 | ~2500字初稿 |
+| novel-draft | 子技能 | 由 main 调用 | 骨架+人物卡 | 2200—2400字初稿 |
 | novel-review | 子技能 | 由 main 调用 | 初稿+设定 | 审查报告 |
 | novel-polish | 子技能 | 由 main 调用 | 初稿+审查 | 定稿 |
 | novel-track | 子技能 | 由 main 调用 | 定稿 | 更新设定 |
@@ -132,8 +133,8 @@
 ```
 1. PREP     → 上下文摘要（前文+人物+伏笔）
 2. PLOT     → 本章剧情推演（事件+冲突+钩子）
-3. DRAFT    → 骨架生成(预审) → Claude Code opus 填肉 → ~2500字初稿
-4. REVIEW   → 审查报告（自动扫描+爽点检查+读者审查）
+3. DRAFT    → 骨架生成(预审) → Claude Code opus 填肉 → 2200—2400字初稿
+4. REVIEW   → 审查报告（自动扫描+字数门禁+有效内容双门槛+爽点检查）
 5. POLISH   → 打磨定稿（对话/画面感/节奏/钩子强化）
 6. TRACK    → 更新设定（人物状态/伏笔表/章节梗概）
 7. MILESTONE → 里程碑审查（每5章触发）
@@ -158,7 +159,7 @@ REVIEW↔POLISH 最多循环3次。MILESTONE 仅在 5/10/15...章触发。
 
 ## 创建时间
 
-2026-07-21 | 最近重构：2026-08-01（通用化解耦+脚本参数化）
+2026-07-21 | 最近重构：2026-08-02（字数口径统一2200—2400 + 容量门禁 + 反注水机制 + 36项契约测试）
 
 ## 脚本工具
 
@@ -166,7 +167,7 @@ REVIEW↔POLISH 最多循环3次。MILESTONE 仅在 5/10/15...章触发。
 
 | 脚本 | 用途 | 从书配置读取 |
 |------|------|:----------:|
-| `review_scan.py` | DRAFT后零容忍扫描（地名/系统词/AI词/格式） | ✅ |
+| `review_scan.py` | DRAFT后零容忍扫描（字数门禁/地名/系统词/AI词/死水段/重复意象/格式） | ✅ |
 | `consistency_check.py` | 7维跨文档一致性校验 | ✅ |
 | `backup_chapter.py` | 修改前自动备份 | — |
 | `novel_scan.py` | 违禁词全面扫描（从违禁词库.json） | — |
