@@ -132,9 +132,49 @@ IDLE → PREP → PLOT → DRAFT → REVIEW → POLISH → TRACK → [章节号%
 }
 ```
 
+**🔒 跨章节奏门控（硬性，不可跳过）**：进入 PLOT 推演前，必须对最近 4 章（Ch.N-4 至 Ch.N-1）做情绪曲线分析，检测节奏衰退。检测方法：读取最近 4 章正文，逐章标注情绪类型（爽/建设/危机/压抑/调查），然后检查以下阈值：
+
+| 信号 | 阈值 | 触发动作 |
+|------|------|---------|
+| 连续无打脸 | ≥ 3 章 | 🔴 本章 PLOT **必须**包含至少 1 次当众打脸（质疑→实力→闭嘴），否则退回重推 |
+| 连续无正面胜利 | ≥ 3 章 | 🔴 本章 PLOT **必须**包含至少 1 次「赢」（对手退让/围观者认可/问题解决） |
+| 连续同情绪类型 | ≥ 3 章 | 🔴 本章情绪类型**必须**切换（如连续压抑→本章必须有释放/反转） |
+| 主角连续被动 | ≥ 3 章 | 🔴 本章 PLOT **必须**让主角主动出击（不是应对危机，是制造局面） |
+| 反派隔空出手 | ≥ 3 章 | ⚠️ 本章**建议**让反派或其代理人正面出场 |
+
+> 来源：`references/general/writing-rhythm.md`。MILESTONE 每 5 章才检测一次，但节奏衰退从第 3 章就开始可观测。PLOT 门控把检测前移到每章，防止「写完 5 章才发现无聊」。
+>
+> **与 MILESTONE 的分工**：PLOT 门控是**前瞻性**的——看前几章的症状，决定本章该怎么写；MILESTONE 是**回顾性**的——5章写完后整体验收质量。两者有交叉但不矛盾：PLOT 门控防患于未然，MILESTONE 兜底验收。同一类问题（如「连续重复」），PLOT 门控触发时强制本章变化，MILESTONE 触发时阻塞并要求回退修正。
+
+**门控输出格式**（PLOT 推演前置区块）：
+```markdown
+### 跨章节奏诊断（Ch.N-4 ~ Ch.N-1）
+| 章节 | 情绪类型 | 有打脸 | 有正面胜利 | 主角主动/被动 |
+|------|---------|--------|-----------|-------------|
+| Ch.N-4 | 建设/危机/... | ✅/❌ | ✅/❌ | 主动/被动 |
+| ... | ... | ... | ... | ... |
+
+**触发阈值**：<列出触发的🔴项及本章强制对策>
+**本章情绪目标**：<如：连续3章压抑→本章必须有释放/反转>
+```
+
+**🔒 系统退化检测（与节奏门控并行执行）**：读取最近 5 章面板内容，检查系统是否退化为「计算器」（详见 `references/general/system-golden-finger-design.md` → 系统退化诊断清单 + `references/general/writing-rhythm.md` → 系统退化检测）。触发以下任一🔴→ 本章 PLOT **必须**让系统做至少一件不可替代的事（弹新维度/数字跳变/情报优势/格局重定义）：
+- 连续 ≥ 3 章面板后 MC「收掉/看完不行动」
+- 系统未弹新维度 ≥ 5 章
+- 系统数字对 MC 决策无影响 ≥ 3 章
+- **删系统测试**：把最近 5 章的系统删掉，故事走向是否不变？如果不变 → 🔴 系统彻底失败，本章必须让系统给出「没有系统就绝对不可能知道」的情报
+
+**🔒 剧情推进速度检测（与节奏门控并行执行）**：读取章节规划和最近 20 章正文，检查整体推进速度（详见 `references/general/writing-rhythm.md` → 剧情推进速度检测）。触发以下任一🔴→ 本章 PLOT **必须**包含格局升级动作：
+- 同一对手连续出场 ≥ 30 章
+- 连续无格局升级 ≥ 20 章
+- 建设章连续 ≥ 3 章
+
 **期望输出格式**：
 ```markdown
 ## 第 X 章剧情推演
+
+### 跨章节奏诊断（Ch.N-4 ~ Ch.N-1）
+<门控输出>
 
 ### 核心事件
 （一句话）
@@ -202,26 +242,56 @@ cat > /tmp/novel_chX_prompt.txt << 'PROMPT_EOF'
 <完整 prompt 内容>
 PROMPT_EOF
 
-# 2. 通过文件传参调用
-claude -p "$(cat /tmp/novel_chX_prompt.txt)" --model opus --max-turns 15 --dangerously-skip-permissions
+# 2. 通过 claude_runner 派发（含 idle-timeout 保护、stream-json 事件流、原子写盘）
+python3 ~/.hermes/skills/novel/scripts/claude_runner.py \
+  --prompt-file /tmp/novel_chX_prompt.txt \
+  --model sonnet \
+  --max-turns 15 \
+  --allowed-tools Read,Write,Edit \
+  --idle-timeout 120 \
+  --exit-timeout 10 \
+  --target-file ~/novels/books/<书名>/01-正文存稿/第N章.md \
+  --events-file /tmp/novel_chX_events.jsonl \
+  --output-file /tmp/novel_chX_result.json
 ```
 > ⚠️ 切勿使用内联 `claude -p "prompt文本"` ——中文引号「」等字符会导致 shell 转义失败。
+>
+> ℹ️ 字数统计、违禁词扫描、系统面板验收由主 Agent 脚本在进程结束后执行，**不在 prompt 中要求 Claude 调用 Bash**。这避免了权限拒绝、无效轮次和超时误判。
 
 **骨架模式 prompt 模板**（骨架已固化所有约束，仅需3条铁律）：
 
-```bash
-# 骨架已预审通过后，直接派发
-SKEL=$(cat 00-大纲细纲/章节骨架/第N章_骨架.md)
-claude -p "你是番茄小说签约作者。按以下骨架写第N章正文。只填肉不改骨。直接输出正文。
+1. 先将 prompt 写入临时文件：
+   ```
+   你是番茄小说签约作者。按以下骨架写第N章正文。只填肉不改骨。直接输出正文。
 
-【骨架】
-$SKEL
+   【骨架】
+   <从 00-大纲细纲/章节骨架/第N章_骨架.md 读取>
 
-【铁律 — 只三条，骨架中已固化地名/数字/面板】
-1. 禁止任何真实中国地名。只使用 `02-设定文档/书配置.md` 的地名白名单字段中定义的架空地名。
-2. 系统面板原封不动放进去。不加减行。不修改数字。
-3. 字数2200—2400（目标2250）。对话40%以上。方言/口语点缀3-5处（具体见书配置）。冷感叙述。章末无结束标记。无HTML。" --model opus --max-turns 15 --dangerously-skip-permissions
-```
+   【铁律 — 只三条，骨架中已固化地名/数字/面板】
+   1. 禁止任何真实中国地名。只使用 `02-设定文档/书配置.md` 的地名白名单字段中定义的架空地名。
+   2. 系统面板原封不动放进去。不加减行。不修改数字。
+   3. 字数2200—2400（目标2250）。对话40%以上。方言/口语点缀3-5处（具体见书配置）。冷感叙述。章末无结束标记。无HTML。
+
+   【网文校准（必须遵循）】
+   - 情绪直接给读者，不留白。对手被打脸后的反应要写透（震惊/不服/闭嘴），围观者要有反应。
+   - 事件密度高：本章2-3个场景，每个场景都有信息增量和情绪变化。不要一章只写一件事。
+   - 大白话叙述。比喻读者看不懂就不用。数字要具体。
+   - 章末钩子要具体（谁来了/什么消息/什么危机），不要环境描写收尾。
+   - MC台词短但每句有分量（判断/决定/指令），不是"嗯""好"这种无信息回复。
+   ```
+2. 派发（字数/违禁词/面板验收由主 Agent 脚本执行，不要求 Claude 自行 Bash）：
+   ```bash
+   python3 ~/.hermes/skills/novel/scripts/claude_runner.py \
+     --prompt-file /tmp/novel_chX_prompt.txt \
+     --model sonnet \
+     --max-turns 15 \
+     --allowed-tools Read,Write,Edit \
+     --idle-timeout 120 \
+     --exit-timeout 10 \
+     --target-file ~/novels/books/<书名>/01-正文存稿/第N章.md \
+     --events-file /tmp/novel_chX_events.jsonl \
+     --output-file /tmp/novel_chX_result.json
+   ```
 
 > ⚠️ 旧版 6KB `opus铁律.md` **不再注入**骨架模式。约束已固化在骨架中。opus铁律.md 保留作为参考/review 用，不出现在 prompt 中。
 
@@ -268,10 +338,29 @@ python3 ~/.hermes/skills/novel/scripts/review_scan.py ~/novels/books/<书名>/01
 ```
 任一项「否」→ 该章需注入爽点后再次审查。
 
+**跨章爽点衰减检查**（强制，与单章5项并行执行）：
+检查最近 3 章（含本章）的爽点密度，触发以下任一阈值→**本章审查结论为 ⚠️ 不通过**，必须在 POLISH 中补足：
+```markdown
+[ ] 连续 ≥ 3 章无当众打脸？→ 🔴 本章必须补1次打脸场景
+[ ] 连续 ≥ 3 章无正面胜利（对手退让/围观认可/问题解决）？→ 🔴 本章必须补1次「赢」
+[ ] 连续 ≥ 3 章主角处于被动应对（危机来了→冷静处理→安排下一步）？→ 🔴 本章必须有主角主动出击
+[ ] 连续 ≥ 3 章反派只隔空出手、从不正面出场？→ ⚠️ 本章建议让反派代理人正面出场
+[ ] 连续 ≥ 3 章同一种叙事结构（如「危机→冷静→拒绝→安排」循环）？→ 🔴 本章结构必须变化
+```
+> 此检查与 PLOT 阶段的跨章节奏门控互为兜底：PLOT 门控在前端拦截，REVIEW 衰减检查在后端验证。如果 PLOT 门控触发了🔴但 DRAFT/正文未体现，REVIEW 必须拦截。
+
 **读者视角审查**（每 3 章强制执行，`references/case-studies/读者审查标准.md`）：
 单章写完后放在上下文中连读 3 章，用 Claude Code opus 以 20 年网文读者身份审查：
 ```bash
-claude -p "$(cat /tmp/reader_review_N章.txt)" --model opus --max-turns 30 --dangerously-skip-permissions
+python3 ~/.hermes/skills/novel/scripts/claude_runner.py \
+  --prompt-file /tmp/reader_review_N章.txt \
+  --model sonnet \
+  --max-turns 30 \
+  --allowed-tools Read \
+  --idle-timeout 120 \
+  --exit-timeout 10 \
+  --events-file /tmp/reader_review_N章_events.jsonl \
+  --output-file /tmp/reader_review_N章_result.json
 ```
 读者说「想弃」→ 重写，不修。读者说「想追」→ 保留结构，微调。
 
@@ -352,8 +441,17 @@ cat > /tmp/novel_chX_polish_prompt.txt << 'PROMPT_EOF'
 <完整 prompt 内容>
 PROMPT_EOF
 
-# 2. 通过文件传参调用
-claude -p "$(cat /tmp/novel_chX_polish_prompt.txt)" --model opus --max-turns 15 --dangerously-skip-permissions
+# 2. 通过 claude_runner 派发（含 idle-timeout 保护、stream-json 事件流、原子写盘）
+python3 ~/.hermes/skills/novel/scripts/claude_runner.py \
+  --prompt-file /tmp/novel_chX_polish_prompt.txt \
+  --model sonnet \
+  --max-turns 15 \
+  --allowed-tools Read,Write,Edit \
+  --idle-timeout 120 \
+  --exit-timeout 10 \
+  --target-file ~/novels/books/<书名>/01-正文存稿/第N章.md \
+  --events-file /tmp/novel_chX_polish_events.jsonl \
+  --output-file /tmp/novel_chX_polish_result.json
 ```
 > ⚠️ 切勿使用内联 `claude -p "prompt文本"` ——中文引号会导致 shell 转义失败。
 
@@ -445,7 +543,10 @@ X / Y 章（XX%）
 
 ### 步骤 7：MILESTONE（里程碑审查）
 
-> ⚠️ **条件触发**：仅当 `章节号 % 5 == 0`（即第 5、10、15、20...章）时执行本步骤。非 5 的倍数章节跳过本步骤，直接进入 BACKUP。
+> ⚠️ **条件触发**：在以下任一条件满足时执行本步骤：
+> 1. `章节号 % 5 == 0`（即第 5、10、15、20...章）
+> 2. **当前章节是所在卷的最后一章**（从分卷细纲/章节规划确认。卷末必须审查，不论章节号是否为5的倍数）
+> 非上述情况的章节跳过本步骤，直接进入 BACKUP。
 
 **调用子技能**：`novel-milestone`（若不存在则按以下规范内联执行）
 
@@ -650,5 +751,5 @@ X / Y 章（XX%）
   - 知识库：`~/.hermes/skills/novel/knowledge/`
   - 状态文件：`~/.hermes/skills/novel/_state/`
   - 全局日志与备份：`~/novels/_shared/logs/` 和 `~/novels/_shared/backups/`
-- **DRAFT/POLISH 铁律**：这两步是文字创作，必须用 Claude Code CLI (`--model opus --max-turns 15`)，禁止用 delegate_task。delegate_task 的子代理不遵循创作规则，会自创地名/数字/系统功能。
+- **DRAFT/POLISH 铁律**：这两步是文字创作，必须用 Claude Code CLI (`--model sonnet --max-turns 15`)，禁止用 delegate_task。delegate_task 的子代理不遵循创作规则，会自创地名/数字/系统功能。
 - **里程碑审查报告归档**：报告保存至 `00-大纲细纲/里程碑审查_第N章.md`，方便后续回溯各批 5 章的质量评估历史

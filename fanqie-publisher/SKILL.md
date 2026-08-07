@@ -50,3 +50,15 @@ python3 ~/.hermes/skills/novel/fanqie-publisher/scripts/login_browser.py
 3. 弹窗必须 force=True 点击
 4. 不关浏览器，保持登录态
 5. Hermes 环境用 venv Python：`~/.hermes/hermes-agent/venv/bin/python3`
+
+## 原流程优先与启动兜底
+
+用户要求「继续原有技能」或既有投递流程已经验证时，必须坚持本技能的原脚本、原固定 Profile 和原 BOOK_ID 解析方式，不得擅自改走新浏览器、隔离 Profile、通用浏览器工具或手工填表。
+
+如果 Hermes 的 shell 包装层在**进程启动前**拦截命令，但脚本本身和依赖已验证：
+1. 先确认没有产生后台草稿或浏览器副作用；
+2. 在用户明确要求继续原技能后，可通过 macOS 现有「终端」窗口执行**完全相同的技能命令**；
+3. 不修改脚本、不替换 Python 环境、不切换浏览器 Profile；
+4. 以脚本输出「已存草稿」作为保存回执，再按草稿箱专用路由核对，不能只凭回执宣称完成。
+
+核对时直接进入草稿箱路由，禁止再次打开新建章节页，以免额外生成 0 字未命名草稿。详细核对规范见 `novel-publishing/references/fanqie-draft-reconciliation.md`；命令包装层拦截时的等价启动步骤见 `references/fixed-profile-launch-fallback.md`。

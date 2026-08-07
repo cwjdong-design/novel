@@ -12,7 +12,7 @@
 
 ### 1. 修复用 Claude Code，不用 delegate_task
 - `delegate_task`：余额限制、模型锁死在当前 provider、上下文继承
-- `claude -p '任务' --model opus --dangerously-skip-permissions`：独立进程、无限制
+- `claude -p '任务' --model sonnet --dangerously-skip-permissions`：独立进程、无限制
 - 铁律：改代码 = `claude -p`，审查可混用两者
 
 ### 2. 审查至少两个视角并行
@@ -50,8 +50,8 @@
 
 ```bash
 # 审查
-claude -p "审查 ~/.hermes/skills/novel/ 全部。🔴阻断bug。" --model opus --max-turns 10
+claude -p "审查 ~/.hermes/skills/novel/ 全部。🔴阻断bug。" --model sonnet --max-turns 10
 
 # 修复
-claude -p "修复问题描述" --model opus --max-turns 20 --dangerously-skip-permissions
+claude -p "修复问题描述" --model sonnet --max-turns 20 --dangerously-skip-permissions
 ```

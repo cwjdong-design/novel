@@ -7,7 +7,8 @@
 BOOK_ID 解析顺序：--book-id 参数 > 书配置.md 中的番茄BOOK_ID > 报错
 KNOW_IDS 从 番茄章节ID.json 读取（不存在则空字典）
 """
-import sys, os, json, time, argparse
+import sys, os, json, time, argparse, html, re
+from urllib.parse import quote
 from playwright.sync_api import sync_playwright
 
 PROFILE = os.path.expanduser('~/.hermes/browser-profiles/fanqie')
@@ -42,22 +43,72 @@ def load_know_ids(book_name):
 
 
 def parse_md(path):
-    """解析 MD 文件，返回 (章节号, 标题, HTML正文)"""
-    with open(path, 'r') as f:
-        lines = f.read().strip().split('\n')
+    """解析 MD 文件，返回 (章节号, 标题, HTML正文)
 
-    header = lines[0]
-    ch_num = int(header.replace('## 第', '').split('章')[0].strip())
-    rest = header.split('章', 1)[1].strip()
-    if rest.startswith('「') and '」' in rest:
-        title = rest[1:rest.index('」')]
-    else:
-        title = rest
+    内部委托给 parse_and_validate_md，不做 expected_chapter 校验以保持兼容。
+    """
+    result = parse_and_validate_md(path, expected_chapter=None)
+    return result['chapter'], result['title'], result['body_html']
 
-    bi = next(i for i, l in enumerate(lines) if l.startswith('##')) + 1
-    parts = [f'<p>{l.strip()}</p>' for l in lines[bi:] if l.strip()]
 
-    return ch_num, title, ''.join(parts)
+def parse_and_validate_md(path, expected_chapter=None):
+    """解析并校验 MD 章节文件。
+
+    Args:
+        path: MD 文件路径
+        expected_chapter: 期望的章节号，None 则不校验
+
+    Returns:
+        dict: {chapter, title, body_html}
+
+    Raises:
+        ValueError: NUL 字节、空标题、空正文、章节号不匹配
+    """
+    # 二进制读取以检测 NUL
+    with open(path, 'rb') as f:
+        raw_bytes = f.read()
+
+    if b'\x00' in raw_bytes:
+        raise ValueError("文件包含 NUL 字节，拒绝处理")
+
+    try:
+        text = raw_bytes.decode('utf-8', errors='strict')
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"文件不是有效 UTF-8: {exc}") from exc
+    lines = text.strip().split('\n')
+
+    # 解析首行：## 第N章「标题」 或 ## 第N章 标题
+    header = lines[0].strip() if lines else ''
+    match = re.fullmatch(r'##\s*第(\d+)章\s*(?:「([^」]*)」|(.*))', header)
+    if not match:
+        raise ValueError("首行格式错误，应为 ## 第N章「标题」")
+    ch_num = int(match.group(1))
+
+    # 章节号校验
+    if expected_chapter is not None and ch_num != expected_chapter:
+        raise ValueError(
+            f"章节号不一致：文件为第{ch_num}章，参数为第{expected_chapter}章"
+        )
+
+    # 提取标题
+    title = (match.group(2) if match.group(2) is not None else match.group(3) or '').strip()
+
+    if not title.strip():
+        raise ValueError("标题为空")
+
+    # 提取正文
+    body_lines = [l.strip() for l in lines[1:] if l.strip()]
+
+    if not body_lines:
+        raise ValueError("正文为空")
+
+    parts = [f'<p>{html.escape(l)}</p>' for l in body_lines]
+
+    return {
+        'chapter': ch_num,
+        'title': title,
+        'body_html': ''.join(parts),
+    }
 
 
 def dismiss_dialogs(page):
@@ -75,12 +126,12 @@ def dismiss_dialogs(page):
 
 def set_input_value(el, value):
     """安全设置 React 输入框值"""
-    el.evaluate(f'''el=>{{
+    el.evaluate('''(el, value)=>{
         const s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value").set;
-        s.call(el,"{value}");
-        el.dispatchEvent(new Event("input",{{bubbles:true}}));
-        el.dispatchEvent(new Event("change",{{bubbles:true}}));
-    }}''')
+        s.call(el,value);
+        el.dispatchEvent(new Event("input",{bubbles:true}));
+        el.dispatchEvent(new Event("change",{bubbles:true}));
+    }''', value)
 
 
 def fill_body(page, body_html):
@@ -98,49 +149,216 @@ def fill_body(page, body_html):
     time.sleep(3)
 
 
-def save_draft(chapter_num, md_path, book_id=None, know_ids=None):
-    """新建章节并存入草稿箱；本脚本不具备正式发布能力。"""
+def validate_editor_elements(page):
+    """校验编辑器页面的关键元素是否存在且唯一。
+
+    只检查选择器 count()，不执行任何点击操作。
+    元素缺失或多于一个即抛异常（fail closed）。
+
+    Raises:
+        Exception: 元素缺失或不唯一
+    """
+    required = {
+        '章节序号输入框': '.serial-editor-title-left input[type="text"]',
+        '标题输入框': 'input[placeholder*="标题"]',
+        '正文编辑器': '.serial-editor-container .ProseMirror[contenteditable="true"]',
+        '存草稿按钮': 'button:has-text("存草稿")',
+    }
+
+    for name, selector in required.items():
+        count = page.locator(selector).count()
+        if count == 0:
+            raise RuntimeError(f"页面缺少元素: {name} ({selector})")
+        if count > 1:
+            raise RuntimeError(f"页面元素不唯一: {name} ({selector})，找到 {count} 个")
+        locator = page.locator(selector)
+        if not locator.is_visible():
+            raise RuntimeError(f"页面元素不可见: {name} ({selector})")
+        if name == '存草稿按钮' and not locator.is_enabled():
+            raise RuntimeError(f"页面元素不可用: {name} ({selector})")
+
+
+def find_duplicate_drafts(draft_list, expected_chapter, expected_title=None):
+    """在草稿列表中查找与目标章节号+标题匹配的条目。
+
+    Args:
+        draft_list: 草稿列表，每项为 {chapter, title, ...}
+        expected_chapter: 目标章节号
+        expected_title: 目标标题
+
+    Returns:
+        list: 匹配的草稿条目（空列表表示无重复）
+    """
+    if not draft_list:
+        return []
+    return [d for d in draft_list if d.get('chapter') == expected_chapter and (
+        expected_title is None or d.get('title') == expected_title
+    )]
+
+
+def normalize_draft_payload(payload):
+    """规范化草稿箱 ``draft_list/v1`` 响应；不完整条目不参与判断。"""
+    entries = ((payload or {}).get('data') or {}).get('draft_list') or []
+    normalized = []
+    for entry in entries:
+        raw_title = entry.get('title')
+        if not isinstance(raw_title, str):
+            continue
+        match = re.fullmatch(r'\s*第(\d+)章\s*(?:「([^」]+)」|(.+))\s*', raw_title)
+        if not match:
+            continue
+        title = (match.group(2) or match.group(3) or '').strip()
+        if not title:
+            continue
+        normalized.append({
+            'chapter': int(match.group(1)),
+            'title': title,
+            'id': entry.get('item_id'),
+            'word_count': entry.get('word_number'),
+            'modify_time': entry.get('modify_time'),
+        })
+    return normalized
+
+
+def snapshot_from_payload(payload):
+    """将完整的单页 API 响应转为快照；任何歧义都 fail closed。"""
+    data = (payload or {}).get('data') or {}
+    entries = data.get('draft_list') or []
+    total_count = data.get('total_count')
+    if not isinstance(total_count, int) or total_count != len(entries):
+        raise RuntimeError(
+            f'草稿列表不完整：total_count={total_count!r}, entries={len(entries)}'
+        )
+    normalized = normalize_draft_payload(payload)
+    if len(normalized) != len(entries):
+        raise RuntimeError('草稿列表存在无法解析的章节号或标题，拒绝继续')
+    return normalized
+
+
+def reconcile_draft_result(before_drafts, after_drafts,
+                           expected_chapter, expected_title):
+    """用保存前后草稿快照对账；不从按钮点击推断保存成功。"""
+    duplicates = find_duplicate_drafts(before_drafts, expected_chapter)
+    if duplicates:
+        return {
+            'status': 'duplicate_detected',
+            'chapter': expected_chapter,
+            'title': expected_title,
+            'platform_word_count': None,
+            'duplicate_count': len(duplicates),
+        }
+    matches = find_duplicate_drafts(after_drafts, expected_chapter, expected_title)
+    if matches:
+        item = matches[0]
+        return {
+            'status': 'draft_saved_verified',
+            'chapter': expected_chapter,
+            'title': expected_title,
+            'platform_word_count': item.get('word_count'),
+            'draft_id': item.get('id'),
+            'duplicate_count': 0,
+        }
+    return {
+        'status': 'save_unverified',
+        'chapter': expected_chapter,
+        'title': expected_title,
+        'platform_word_count': None,
+        'duplicate_count': 0,
+    }
+
+
+def execute_draft_flow(before_drafts, chapter, title,
+                       open_editor, click_save, postcheck):
+    """可测试的副作用顺序：重复检查 → 打开编辑器 → 保存 → 后台对账。"""
+    duplicate_result = reconcile_draft_result(before_drafts, before_drafts, chapter, title)
+    if duplicate_result['status'] == 'duplicate_detected':
+        return duplicate_result
+    open_editor()
+    click_save()
+    after_drafts = postcheck()
+    return reconcile_draft_result(before_drafts, after_drafts, chapter, title)
+
+
+def fetch_draft_snapshot(ctx, book_id, book_name):
+    """从草稿箱页面自身发出的已验证 API 响应获取结构化快照。"""
+    route = (
+        f'https://fanqienovel.com/main/writer/chapter-manage/'
+        f'{book_id}&{quote(book_name)}?type=2&from=chapter'
+    )
+    page = ctx.new_page()
+    try:
+        with page.expect_response(
+            lambda response: (
+                '/api/author/chapter/draft_list/v1' in response.url
+                and response.request.method == 'GET'
+            ),
+            timeout=15000,
+        ) as pending:
+            page.goto(route, wait_until='domcontentloaded')
+        response = pending.value
+        if not response.ok:
+            raise RuntimeError(f'草稿列表接口返回 HTTP {response.status}')
+        return snapshot_from_payload(response.json())
+    except Exception as exc:
+        raise RuntimeError(f'无法取得草稿箱结构化证据: {exc}') from exc
+    finally:
+        page.close()
+
+
+def save_draft(chapter_num, md_path, book_name, book_id=None, know_ids=None):
+    """新建单章草稿，并以前后草稿箱 API 快照完成对账。"""
     if know_ids is None:
         know_ids = {}
-    ch_num, title, body_html = parse_md(md_path)
-    print(f'📄 第{ch_num}章「{title}」({len(body_html)}字符)')
+
+    parsed = parse_and_validate_md(md_path, expected_chapter=chapter_num)
+    ch_num = parsed['chapter']
+    title = parsed['title']
+    body_html = parsed['body_html']
 
     with sync_playwright() as p:
         ctx = p.chromium.launch_persistent_context(user_data_dir=PROFILE, headless=False)
+        editor = None
         try:
-            page = ctx.new_page()
+            # 必须先查草稿箱；同章节号已存在即停止，不打开新建页。
+            before_drafts = fetch_draft_snapshot(ctx, book_id, book_name)
 
-            url = f'https://fanqienovel.com/main/writer/{book_id}/publish/?enter_from=newchapter'
-
-            page.goto(url, wait_until='domcontentloaded')
-            time.sleep(3)
-            dismiss_dialogs(page)
-
-            # 填序号
-            num_input = page.locator('.serial-editor-title-left input[type="text"]')
-            if num_input.count() > 0:
-                set_input_value(num_input, str(ch_num))
-
-            # 填标题
-            ti = page.locator('input[placeholder*="标题"]')
-            if ti.count() > 0:
-                set_input_value(ti, title)
-
-            # 填正文
-            fill_body(page, body_html)
-
-            # 只存草稿，绝不进入正式发布流程
-            draft_btn = page.locator('button:has-text("存草稿")')
-            if draft_btn.count() > 0:
-                draft_btn.click(force=True)
+            def open_editor():
+                nonlocal editor
+                editor = ctx.new_page()
+                url = f'https://fanqienovel.com/main/writer/{book_id}/publish/?enter_from=newchapter'
+                editor.goto(url, wait_until='domcontentloaded')
                 time.sleep(3)
-                print(f'✅ 第{ch_num}章已存草稿')
-            else:
-                print(f'⚠️ 未找到存草稿按钮')
+                dismiss_dialogs(editor)
+                validate_editor_elements(editor)
+                set_input_value(
+                    editor.locator('.serial-editor-title-left input[type="text"]'),
+                    str(ch_num),
+                )
+                set_input_value(editor.locator('input[placeholder*="标题"]'), title)
+                fill_body(editor, body_html)
 
-            print('🌐 浏览器保持打开，确认后手动关闭')
-            time.sleep(10)
+            def click_save():
+                if editor is None:
+                    raise RuntimeError('编辑器尚未打开，拒绝保存')
+                editor.locator('button:has-text("存草稿")').click(force=True)
+                time.sleep(3)
+
+            def postcheck():
+                return fetch_draft_snapshot(ctx, book_id, book_name)
+
+            result = execute_draft_flow(
+                before_drafts,
+                ch_num,
+                title,
+                open_editor=open_editor,
+                click_save=click_save,
+                postcheck=postcheck,
+            )
+            print(json.dumps(result, ensure_ascii=False))
+            return result
         finally:
+            if editor is not None:
+                editor.close()
             ctx.close()
 
 
@@ -164,5 +382,14 @@ if __name__ == '__main__':
     book_id = load_book_id(args.book, args.book_id)
     know_ids = load_know_ids(args.book)
 
-    print(f'📖 BOOK_ID={book_id}, 已知章节={len(know_ids)}个')
-    save_draft(args.chapter, md_path, book_id, know_ids)
+    try:
+        result = save_draft(args.chapter, md_path, args.book, book_id, know_ids)
+    except Exception as exc:
+        print(json.dumps({
+            'status': 'failed_needs_review',
+            'chapter': args.chapter,
+            'error': str(exc),
+        }, ensure_ascii=False))
+        sys.exit(1)
+    if result['status'] not in {'draft_saved_verified', 'duplicate_detected'}:
+        sys.exit(2)
