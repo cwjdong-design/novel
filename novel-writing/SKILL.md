@@ -71,6 +71,7 @@ category: novel
 - `references/general/system-golden-finger-design.md` — 系统金手指设计方法论（删系统测试 + 三层情报等级 + 退化诊断清单 + 渐进进化原则 + 新书系统设计模板）
 - `references/general/author-voice-dna.md` — 作者声音DNA定义（句式节奏+标志性用词+比喻意象域+AI味诊断清单+新书模板）
 - `references/general/webnovel-style-calibration.md` — 网文风格校准：文学感网文 vs 大白话网文诊断表+10条校准规则+DRAFT注入+REVIEW检查6项
+- `references/general/references-version-alignment.md` — references版本对齐方法论：触发条件+执行步骤+坑（不要只看文件名就删、子技能不是死代码）
 - `references/general/claude-code-model-routing.md` — Claude Code 模型路由：pandai 中继各通道长 prompt 性能实测、排查方法论、DRAFT/POLISH 失败回退规则
 | `references/general/workflow-lock.md` | 流程锁：novel_step.sh 防跳步机制 |
 | `references/case-studies/review-methodology.md` | 审查方法论+8步全量一致性审查清单+工具陷阱（每卷完成/设定变更后触发） |
@@ -184,7 +185,11 @@ python3 ~/.hermes/skills/novel/scripts/consistency_check.py --book <书名>
 - 目标平台：番茄小说
 - 关键要求：去AI味、网感、故意错别字仅限对话
 
-> ⚠️ **「直接、不煽情」只是温度，不是DNA。** 作者声音需要更具体的定义——句式节奏、标志性用词、比喻意象域、叙事视角距离、对话标记习惯。没有这些锚点，Claude Code 默认用AI通用文学腔（均匀句长、工整段落、正确但无个性的比喻），结果是「技术合格但没辨识度」。详见 `references/general/author-voice-dna.md`。新书创建时必须在书配置.md中填写「作者声音DNA」区块；已有书可通过正文逆向分析提取DNA。
+> ⚠️ **「直接、不煽情」只是温度，不是DNA。** 作者声音需要更具体的定义——句式节奏、标志性用词、比喻意象域、叙事视角距离、对话标记习惯。没有这些锚点，Claude Code 默认用AI通用文学腔。详见 `references/general/author-voice-dna.md`。新书创建时必须在书配置.md中填写「作者声音DNA」区块；已有书可通过正文逆向分析提取DNA。
+>
+> ⚠️ **网文不是文学。** AI默认产出"文学感网文"——冷、隐晦、克制、留白多。番茄读者要的是"大白话网文"——直接、爽快、情绪到位。详见 `references/general/webnovel-style-calibration.md`（10条校准规则+DRAFT注入+REVIEW检查6项）。DRAFT prompt必须追加网文校准片段，REVIEW必须追加网文校准6项检查。不校准=写着写着变成严肃文学=读者流失。
+>
+> ⚠️ **技能沉淀优先于当前书的修复。** 用户反馈「这本书崩了就崩了，但技能要沉淀下来」。当发现系统性问题时，先把教训固化到技能（让下一本书不再犯），再考虑当前书的修补。不要只修当前章不改技能——同类错误会在下一本书重复。
 
 ## 写作质量铁律
 
