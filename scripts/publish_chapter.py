@@ -77,8 +77,22 @@ def parse_and_validate_md(path, expected_chapter=None):
         raise ValueError(f"文件不是有效 UTF-8: {exc}") from exc
     lines = text.strip().split('\n')
 
+    # 跳过可能的 POLISH/prompt 残留行——找到第一个 ## 第N章 行
+    first_marker_idx = None
+    for i, line in enumerate(lines):
+        if line.strip().startswith('## 第'):
+            first_marker_idx = i
+            break
+    if first_marker_idx is None:
+        raise ValueError("首行格式错误：未找到 ## 第N章 开头的行")
+    if first_marker_idx > 0:
+        # 文件首部有残留——自动修剪文件
+        lines = lines[first_marker_idx:]
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(lines) + '\n')
+
     # 解析首行：## 第N章「标题」 或 ## 第N章 标题
-    header = lines[0].strip() if lines else ''
+    header = lines[0].strip()
     match = re.fullmatch(r'##\s*第(\d+)章\s*(?:「([^」]*)」|(.*))', header)
     if not match:
         raise ValueError("首行格式错误，应为 ## 第N章「标题」")
@@ -279,6 +293,59 @@ def execute_draft_flow(before_drafts, chapter, title,
     return reconcile_draft_result(before_drafts, after_drafts, chapter, title)
 
 
+def clean_dirty_drafts(ctx, book_id, book_name):
+    """发布前自动清理草稿箱中的0字/未命名脏草稿，防止严格校验被阻断。"""
+    route = (
+        f'https://fanqienovel.com/main/writer/chapter-manage/'
+        f'{book_id}&{quote(book_name)}?type=2&from=chapter'
+    )
+    page = ctx.new_page()
+    try:
+        with page.expect_response(
+            lambda r: '/api/author/chapter/draft_list/v1' in r.url and r.request.method == 'GET',
+            timeout=15000,
+        ) as pending:
+            page.goto(route, wait_until='domcontentloaded')
+        raw_entries = ((pending.value.json() or {}).get('data') or {}).get('draft_list') or []
+    except Exception:
+        page.close()
+        return 0
+    finally:
+        try:
+            page.close()
+        except Exception:
+            pass
+
+    # 找脏草稿：0字 或 标题不含有效章节号 或 含"未命名"
+    dirty_count = sum(
+        1 for e in raw_entries
+        if e.get('word_number', 0) == 0
+        or '未命名' in e.get('title', '')
+        or not re.match(r'\s*第\d+章', e.get('title', ''))
+    )
+    if dirty_count == 0:
+        return 0
+
+    # 打开草稿管理页逐个删除
+    page = ctx.new_page()
+    try:
+        page.goto(route, wait_until='domcontentloaded')
+        time.sleep(3)
+        for _ in range(dirty_count + 1):
+            del_btn = page.locator('.tomato-delete, .icon-delete')
+            if del_btn.count() == 0:
+                break
+            del_btn.first.click(force=True)
+            time.sleep(1)
+            confirm = page.locator('button:has-text("确认"), button:has-text("删除")')
+            if confirm.count() > 0:
+                confirm.first.click(force=True)
+                time.sleep(2)
+    finally:
+        page.close()
+    return dirty_count
+
+
 def fetch_draft_snapshot(ctx, book_id, book_name):
     """从草稿箱页面自身发出的已验证 API 响应获取结构化快照。"""
     route = (
@@ -319,6 +386,12 @@ def save_draft(chapter_num, md_path, book_name, book_id=None, know_ids=None):
         ctx = p.chromium.launch_persistent_context(user_data_dir=PROFILE, headless=False)
         editor = None
         try:
+            # 清理草稿箱中的0字/未命名脏草稿（防止严格校验被阻断）
+            try:
+                clean_dirty_drafts(ctx, book_id, book_name)
+            except Exception:
+                pass  # 清理失败不阻塞主流程
+
             # 必须先查草稿箱；同章节号已存在即停止，不打开新建页。
             before_drafts = fetch_draft_snapshot(ctx, book_id, book_name)
 
